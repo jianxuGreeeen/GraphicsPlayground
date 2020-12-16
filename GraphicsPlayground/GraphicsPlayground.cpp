@@ -1,12 +1,16 @@
 // GraphicsPlayground.cpp : Defines the entry point for the application.
 //
+#pragma warning(disable : 26812)
 
 #include "GraphicsPlayground.h"
 #include "App.h"
+#include "GameGraphics.h"
 #include "Graphics.h"
 #include "WindowSettings.h"
 
 #include <exception>
+#include <memory>
+#include <iostream>
 
 WindowSettings LoadSettings()
 {
@@ -30,12 +34,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     app.Init(hInstance, nCmdShow);
     app.MakeWindow(wndSettings);
 
-    Graphics gfx;
-
+    Graphics gfx = {};
     try
     {
         gfx.Init();
         gfx.PrepForWindow(app);
+
+        GameGraphics gameGfx;
+        gameGfx.Init(gfx);
 
         bool running = false;
         do
@@ -44,16 +50,18 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             if (running)
             {
                 gfx.Update();
+                gameGfx.Update(gfx);
                 gfx.Draw();
             }
         } while (running);
     }
-    catch(std::exception&)
+    catch(std::exception& e)
     {
         // TODO: handle me
+        std::cout << e.what() << std::endl;
     }
-    gfx.Shutdown();
 
+    gfx.Shutdown();
     return 0;
 }
 
