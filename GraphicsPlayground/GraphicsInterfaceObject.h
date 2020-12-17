@@ -29,6 +29,11 @@ public:
 		this = std::move(aObj);
 	}
 
+	explicit GraphicsInterfaceObject(GraphicsInterfaceObject<T>& aObj)
+	{
+		this = aObj;
+	}
+
 	~GraphicsInterfaceObject()
 	{
 		Release();
@@ -43,7 +48,16 @@ public:
 
 	GraphicsInterfaceObject& operator = (GraphicsInterfaceObject<T>&& aObj)
 	{
+		Release();
 		Ptr = aObj.aPtr;
+		aObj.Ptr = nullptr;
+		return *this;
+	}
+
+	GraphicsInterfaceObject& operator = (GraphicsInterfaceObject<T>& aObj)
+	{
+		Release();
+		Ptr = aObj.Ptr;
 		aObj.Ptr = nullptr;
 		return *this;
 	}

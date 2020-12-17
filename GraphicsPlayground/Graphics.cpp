@@ -33,16 +33,16 @@ void Graphics::PrepForWindow(const App& arApp)
     Cam.VP.Height = static_cast<float>(arApp.GetSettings().Height);
 }
 
-void Graphics::LoadShaders(const std::vector<ShaderName>& arPixelShaders, const std::vector<ShaderName>& arVertexShaders)
+void Graphics::LoadResources()
 {
     ValidateDevice();
-    ShaderMgr.Load(*spDevice, arPixelShaders, arVertexShaders);
+    ShaderMgr.Load(*spDevice);
 }
 
-void Graphics::AddItemToDraw(Model* apModel, const ModelInstance& arInstanceData)
+void Graphics::AddItemToDraw(Model* const apModel, const ModelInstance& arInstanceData)
 {
     ValidateDevice();
-    ItemsToDraw.emplace(std::make_pair(apModel, arInstanceData));
+    ItemsToDraw[apModel].push_back(arInstanceData);
 }
 
 void Graphics::Update()
@@ -71,10 +71,11 @@ void Graphics::Draw()
         auto* pmodel = kvp.first;
         auto* pvbuffer = pmodel->GetVBuffer();
 
-        auto& rvshaderData = ShaderMgr.GetVs(pmodel->GetVShader());
-        auto& rvshader = *(rvshaderData.Vs);
-        auto& rvlayout = *(rvshaderData.VsLayout);
-        auto& rpshader = ShaderMgr.GetPs(pmodel->GetPShader());
+        auto& rvshaderData = ShaderMgr.GetVShader(pmodel->GetVShader());
+        auto& rvshader = *(rvshaderData.spShader.Get());
+        auto& rvlayout = *(rvshaderData.spLayout);
+        auto& rpshaderData = ShaderMgr.GetPShader(pmodel->GetPShader());
+        auto& rpshader = *(rpshaderData.spShader.Get());
 
         spDeviceCtx->VSSetShader(&rvshader, nullptr, 0);
         spDeviceCtx->PSSetShader(&rpshader, nullptr, 0);

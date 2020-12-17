@@ -13,7 +13,7 @@ public:
 	GameGraphics() = default;
 	~GameGraphics() = default;
 
-	void Init(Graphics& arGfx);
+	void LoadResources(Graphics& arGfx);
 	void Update(Graphics& arGfx);
 
 private:
@@ -23,8 +23,5 @@ private:
 	GameGraphics& operator = (GameGraphics&&) = delete;
 
 	std::unique_ptr<Model> spTriangle;
-
-	void LoadModels(GraphicsDevice& arDevice);
-
 };
 

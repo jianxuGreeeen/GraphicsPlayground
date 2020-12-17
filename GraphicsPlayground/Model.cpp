@@ -7,12 +7,12 @@ std::unique_ptr<Model> Model::CreateTriangle()
 {
 	std::vector<Vertex> verts =
 	{
-		{ 0.0f, 0.5f, 0.5f },
-		{ 0.5f, -0.5f, 0.5f },
-		{ -0.5f, -0.5f, 0.5f },
+		{ Vector3(0.0f, 0.5f, 0.5f), Color4(1.0f, 0.0f, 0.0f, 1.0) },
+		{ Vector3(0.5f, -0.5f, 0.5f), Color4(0.0f, 1.0f, 0.0f, 1.0) },
+		{ Vector3 (-0.5f, -0.5f, 0.5f), Color4(0.0f, 0.0f, 1.0f, 1.0) },
 	};
 
-	return std::make_unique<Model>(ShaderNames::BasicPixelShader, ShaderNames::BasicVertShader, std::move(verts));
+	return std::make_unique<Model>(std::move(verts));
 }
 
 void Model::Init(GraphicsDevice& arDevice)

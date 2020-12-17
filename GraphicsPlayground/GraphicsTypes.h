@@ -18,5 +18,5 @@ using SwapChainBuffer = ID3D11Texture2D;
 using VertexShader = ID3D11VertexShader;
 using PixelShader = ID3D11PixelShader;
 using VertexBuffer = ID3D11Buffer;
-using VertexLayout = ID3D11InputLayout;
+using ShaderInputLayout = ID3D11InputLayout;
 

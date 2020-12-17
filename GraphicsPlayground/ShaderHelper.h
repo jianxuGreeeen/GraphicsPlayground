@@ -1,11 +1,10 @@
 #pragma once
 #include "GraphicsTypes.h"
-#include <string>
+#include "ShaderNames.h"
 
 namespace ShaderHelper
 {
-	CompiledShaderObject* CreateCompiledShaderObject(const std::wstring& arFileName);
-
-	std::wstring MakeShaderFileName(const std::wstring& arShaderName);
+	CompiledShaderObject* CreateCompiledShaderObject(const ShaderName& arFileName);
 };
+
 

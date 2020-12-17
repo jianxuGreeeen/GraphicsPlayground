@@ -1,60 +1,55 @@
 #include "ShaderManager.h"
-#include "ShaderHelper.h"
-#include "ShaderLayouts.h"
-#include <stdexcept>
+#include "ShaderLoader.h"
+#include "ShaderKey.h"
 
-void ShaderManager::Load(GraphicsDevice& arDevice, const std::vector<ShaderName>& arPixelShaders, const std::vector<ShaderName>& arVertexShaders)
+namespace
 {
-	for (const auto& rshaderName : arVertexShaders)
+	struct VShaderLoadInfo
 	{
-		auto filename = ShaderHelper::MakeShaderFileName(rshaderName);
-		auto* pcso = ShaderHelper::CreateCompiledShaderObject(filename);
-		VertexShader* pvs = nullptr;
+		VShaderKey Key;
+		VShaderLoadFunc Loader;
+	};
+	struct PShaderLoadInfo
+	{
+		PShaderKey Key;
+		PShaderLoadFunc Loader;
+	};
 
-		auto hr = arDevice.CreateVertexShader(pcso->GetBufferPointer(), pcso->GetBufferSize(), nullptr, &pvs);
-		if (FAILED(hr))
-		{
-			pcso->Release();
-			throw new std::runtime_error("ShaderManager failed to CreateVertexShader");
-		}
-		
-		VertexLayout* pvlayout = nullptr;
-		auto vlayout = ShaderLayouts::GetBasicLayout();
-		hr = arDevice.CreateInputLayout(vlayout.data(), static_cast<UINT>(vlayout.size()), 
-			pcso->GetBufferPointer(), pcso->GetBufferSize(), &pvlayout);
+	// Vertex shaders to load
+	VShaderLoadInfo VLoadData[] =
+	{
+		{VShaderKey::BasicShader, VShaderLoader::LoadBasicShader}
+	};
 
-		pcso->Release();
-		if (FAILED(hr))
-		{
-			throw new std::runtime_error("ShaderManager failed to CreateInputLayout");
-		}
+	// Pixel shaders to load
+	PShaderLoadInfo PLoadData[] =
+	{
+		{PShaderKey::BasicShader, PShaderLoader::LoadBasicShader}
+	};
+}
 
-		VsTable.emplace(std::make_pair(rshaderName, std::make_unique<VertexShaderData>(pvs, pvlayout)));
+void ShaderManager::Load(GraphicsDevice& arDevice)
+{
+	for (const auto& rinfo : VLoadData)
+	{
+		auto spshader = rinfo.Loader(arDevice);
+		VsMap.emplace(rinfo.Key, std::move(spshader));
 	}
 
-	for (const auto& rshaderName : arPixelShaders)
+	for (const auto& rinfo : PLoadData)
 	{
-		auto filename = ShaderHelper::MakeShaderFileName(rshaderName);
-		auto* pcso = ShaderHelper::CreateCompiledShaderObject(filename);
-		PixelShader* pps = nullptr;
-		auto hr = arDevice.CreatePixelShader(pcso->GetBufferPointer(), pcso->GetBufferSize(), nullptr, &pps);
-		pcso->Release();
-
-		if (FAILED(hr))
-		{
-			throw new std::runtime_error("ShaderManager failed to CreatePixelShader");
-		}
-		PsTable.emplace(std::make_pair(rshaderName, pps));
+		auto spshader = rinfo.Loader(arDevice);
+		PsMap.emplace(rinfo.Key, std::move(spshader));
 	}
 }
 
-PixelShader& ShaderManager::GetPs(const ShaderName& arKey)
+VShaderInfo& ShaderManager::GetVShader(const VShaderKey aKey)
 {
-	return *(PsTable[arKey]);
+	return *(VsMap[aKey]);
 }
 
-VertexShaderData& ShaderManager::GetVs(const ShaderName& arKey)
+PShaderInfo& ShaderManager::GetPShader(const PShaderKey aKey)
 {
-	return *(VsTable[arKey]);
+	return *(PsMap[aKey]);
 }
 

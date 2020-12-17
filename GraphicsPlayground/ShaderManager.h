@@ -1,39 +1,19 @@
 #pragma once
-#include "GraphicsInterfaceObject.h"
-#include "GraphicsTypes.h"
-#include "ShaderNames.h"
-#include <map>
+#include "Shader.h"
+#include "ShaderKey.h"
 #include <memory>
-#include <vector>
+#include <map>
 
-struct VertexShaderData
-{
-	VertexShaderData(VertexShader* apVs, VertexLayout* apVLayout)
-		: Vs(apVs), VsLayout(apVLayout)
-	{
-	}
-
-	~VertexShaderData()
-	{
-		Vs.Release();
-		VsLayout.Release();
-	}
-
-	GraphicsInterfaceObject<VertexShader> Vs;
-	GraphicsInterfaceObject<VertexLayout> VsLayout;
-};
-
-//TODO: I think we need an additional layer to store combinations of layout, vshader, pshader
 class ShaderManager final
 {
 public:
 	ShaderManager() = default;
 	~ShaderManager() = default;
 
-	void Load(GraphicsDevice& arDevice, const std::vector<ShaderName>& arPixelShaders, const std::vector<ShaderName>& arVertexShaders);
+	void Load(GraphicsDevice& arDevice);
 
-	PixelShader& GetPs(const ShaderName& arKey);
-	VertexShaderData& GetVs(const ShaderName& arKey);
+	VShaderInfo& GetVShader(const VShaderKey aKey);
+	PShaderInfo& GetPShader(const PShaderKey aKey);
 
 private:
 	ShaderManager(ShaderManager&) = delete;
@@ -41,7 +21,7 @@ private:
 	ShaderManager& operator = (ShaderManager&) = delete;
 	ShaderManager& operator = (ShaderManager&&) = delete;
 
-	std::map<ShaderName, std::unique_ptr<VertexShaderData>> VsTable;
-	std::map<ShaderName, GraphicsInterfaceObject<PixelShader>> PsTable;
+	std::map<VShaderKey, std::unique_ptr<VShaderInfo>> VsMap;
+	std::map<PShaderKey, std::unique_ptr<PShaderInfo>> PsMap;
 };
 

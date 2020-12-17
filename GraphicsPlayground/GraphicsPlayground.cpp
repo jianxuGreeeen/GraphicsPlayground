@@ -39,9 +39,10 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     {
         gfx.Init();
         gfx.PrepForWindow(app);
+        gfx.LoadResources();
 
         GameGraphics gameGfx;
-        gameGfx.Init(gfx);
+        gameGfx.LoadResources(gfx);
 
         bool running = false;
         do

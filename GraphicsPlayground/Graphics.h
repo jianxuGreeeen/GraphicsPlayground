@@ -13,6 +13,8 @@
 struct ModelInstance
 {
 	//TODO: Add instance data here
+	PShaderKey PShader = PShaderKey::BasicShader;
+	VShaderKey VShader = VShaderKey::BasicShader;
 };
 
 class App;
@@ -32,8 +34,8 @@ public:
 	void Draw();
 	void Shutdown();
 
-	void LoadShaders(const std::vector<ShaderName>& arPixelShaders, const std::vector<ShaderName>& arVertexShaders);
-	void AddItemToDraw(Model* apModel, const ModelInstance& arInstanceData);
+	void LoadResources();
+	void AddItemToDraw(Model* const apModel, const ModelInstance& arInstanceData);
 
 	GraphicsDevice& GetDevice() { return *spDevice; }
 	ShaderManager& GetShaderMgr() { return ShaderMgr; }
@@ -59,7 +61,7 @@ private:
 	Camera Cam;
 	ShaderManager ShaderMgr;
 
-	std::map<Model*, ModelInstance> ItemsToDraw;
+	std::map<Model* const, std::vector<ModelInstance>> ItemsToDraw;
 
 	void InitAdapter();
 	void InitFactory();

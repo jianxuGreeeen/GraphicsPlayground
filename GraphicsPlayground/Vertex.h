@@ -1,19 +1,17 @@
 #pragma once
+#include "MathTypes.h"
 struct Vertex
 {
-	Vertex() = default;
-	Vertex(float ax, float ay, float az)
-		: x(ax)
-		, y(ay)
-		, z(az)
+	Vertex() 
+		: Pos(0.0f, 0.0f, 0.0f)
+		, Color(0.0f, 0.0f, 0.0f, 0.0f)
+	{}
+
+	Vertex(Vector3 aPos, Color4 aColor)
+		: Pos(std::move(aPos))
+		, Color(std::move(aColor))
 	{};
 
-	float x = 0.0f;
-	float y = 0.0f;
-	float z = 0.0f;
-
-	float r = 0.0f;
-	float g = 0.0f;
-	float b = 0.0f;
-	float a = 0.0f;
+	Vector3 Pos;
+	Color4	Color;
 };
