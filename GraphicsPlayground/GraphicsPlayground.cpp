@@ -50,7 +50,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             running = app.Update();
             if (running)
             {
-                gfx.Update();
+                gfx.Update(app);
                 gameGfx.Update(gfx);
                 gfx.Draw();
             }

@@ -12,28 +12,78 @@ std::unique_ptr<Model> Model::CreateTriangle()
 		{ Vector3 (-0.5f, -0.5f, 0.5f), Color4(0.0f, 0.0f, 1.0f, 1.0) },
 	};
 
-	return std::make_unique<Model>(std::move(verts));
+	std::vector<Index> indices =
+	{
+		{ 0, 1, 2 },
+	};
+
+	return std::make_unique<Model>(std::move(verts), std::move(indices));
+}
+
+std::unique_ptr<Model> Model::CreateQuad()
+{
+	std::vector<Vertex> verts =
+	{
+		{ Vector3(-0.5f, -0.5f, 0.5f), Color4(1.0f, 0.0f, 0.0f, 1.0) },
+		{ Vector3(-0.5f,  0.5f, 0.5f), Color4(0.0f, 1.0f, 0.0f, 1.0) },
+		{ Vector3(0.5f,  0.5f, 0.5f), Color4(0.0f, 0.0f, 1.0f, 1.0) },
+		{ Vector3(0.5f, -0.5f, 0.5f), Color4(0.0f, 1.0f, 0.0f, 1.0) },
+	};
+
+	std::vector<Index> indices =
+	{
+		0, 1, 2,
+		0, 2, 3,
+	};
+
+	return std::make_unique<Model>(std::move(verts), std::move(indices));
 }
 
 void Model::Init(GraphicsDevice& arDevice)
 {
-	D3D11_BUFFER_DESC bufferDesc = {};
+	CreateVertexBuffer(arDevice);
+	CreateIndexBuffer(arDevice);
+}
 
+void Model::CreateVertexBuffer(GraphicsDevice& arDevice)
+{
+	GraphicsBufferDesc bufferDesc = {};
 	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = GetBufferSize() * 7;
+	bufferDesc.ByteWidth = NumVerts() * Vertex::ByteWidth;
 	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
 	bufferDesc.CPUAccessFlags = 0;
 	bufferDesc.MiscFlags = 0;
 
-	D3D11_SUBRESOURCE_DATA bufferData = {};
+	GraphicsBufferData bufferData = {};
 	bufferData.pSysMem = Verts.data();
 
-	VertexBuffer* pbuffer = nullptr;
-	auto hr = arDevice.CreateBuffer(&bufferDesc, &bufferData, &pbuffer);
+	spVBuffer = CreateBuffer(bufferDesc, bufferData, arDevice);
+}
+
+void Model::CreateIndexBuffer(GraphicsDevice& arDevice)
+{
+	GraphicsBufferDesc bufferDesc = {};
+	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
+	bufferDesc.ByteWidth = sizeof(Index) * NumTriangles() * Vertex::ByteWidth;
+	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+	bufferDesc.CPUAccessFlags = 0;
+	bufferDesc.MiscFlags = 0;
+
+	GraphicsBufferData bufferData = {};
+	bufferData.pSysMem = Indices.data();
+
+	spIBuffer = CreateBuffer(bufferDesc, bufferData, arDevice);
+}
+
+GraphicsBuffer* Model::CreateBuffer(const GraphicsBufferDesc& arDesc, const GraphicsBufferData& arData, GraphicsDevice& arDevice)
+{
+	GraphicsBuffer* pbuffer = nullptr;
+	auto hr = arDevice.CreateBuffer(&arDesc, &arData, &pbuffer);
 	if (FAILED(hr))
 	{
-		throw new std::runtime_error("Model failed to create Vertex Buffer");
+		throw new std::runtime_error("CreateBuffer failed");
 	}
-	
-	spVBuffer = pbuffer;
+	return pbuffer;
 }
+
+

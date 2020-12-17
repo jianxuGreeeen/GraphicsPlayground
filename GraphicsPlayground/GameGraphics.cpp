@@ -5,7 +5,7 @@
 void GameGraphics::LoadResources(Graphics& arGfx)
 {
 	auto& rdevice = arGfx.GetDevice();
-	spTriangle = Model::CreateTriangle();
+	spTriangle = Model::CreateQuad();
 	spTriangle->Init(rdevice);
 }
 

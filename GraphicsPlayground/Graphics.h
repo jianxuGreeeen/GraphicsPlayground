@@ -6,6 +6,7 @@
 #include "Model.h"
 #include "ShaderManager.h"
 
+#include <array>
 #include <d3d11.h>
 #include <dxgi1_4.h>
 #include <map>
@@ -30,7 +31,7 @@ public:
 
 	void Init();
 	void PrepForWindow(const App& arApp);
-	void Update();
+	void Update(const App& arApp);
 	void Draw();
 	void Shutdown();
 
@@ -56,13 +57,19 @@ private:
 	GraphicsInterfaceObject<GraphicsDeviceContext> spDeviceCtx;
 	GraphicsInterfaceObject<SwapChain> spSwapChain;
 	GraphicsInterfaceObject<RenderTarget> spRenderTarget;
+	std::array<GraphicsBuffer*, 3> ConstantBuffers;
 
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 	Camera Cam;
 	ShaderManager ShaderMgr;
 
+	Matrix ProjectionMatrix;
+	Matrix ViewMatrix;
+	Matrix WorldMatrix;
+
 	std::map<Model* const, std::vector<ModelInstance>> ItemsToDraw;
 
+	void InitConstantBuffers();
 	void InitAdapter();
 	void InitFactory();
 	void InitDevice();
@@ -74,4 +81,5 @@ private:
 	void PresentFrame();
 
 	void ValidateDevice();
+	void UpdateCBufferData(std::array< GlobalDataType, 3>& arUpdateInfo);
 };

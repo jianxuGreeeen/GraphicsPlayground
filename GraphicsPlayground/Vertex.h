@@ -14,4 +14,6 @@ struct Vertex
 
 	Vector3 Pos;
 	Color4	Color;
+
+	static const int ByteWidth = 7;
 };

@@ -2,6 +2,7 @@
 #include "ShaderHelper.h"
 #include "ShaderLayouts.h"
 #include "ShaderNames.h"
+#include "MathTypes.h"
 #include <stdexcept>
 
 namespace
@@ -35,9 +36,16 @@ namespace VShaderLoader
 		pcso->Release();
 		if (FAILED(hr))
 		{
+			pvs->Release();
 			throw new std::runtime_error("LoadBasicVShader failed to CreateInputLayout");
 		}
-		return std::make_unique<VShaderInfo>(*pvs, *pvlayout);
+
+		std::array< GlobalDataType, 3> cBufferTypes;
+		cBufferTypes[0] = GlobalDataType::ProjectionMatrix;
+		cBufferTypes[1] = GlobalDataType::ViewMatrix;
+		cBufferTypes[2] = GlobalDataType::WorldMatrix;
+
+		return std::make_unique<VShaderInfo>(*pvs, *pvlayout, cBufferTypes);
 	}
 };
 

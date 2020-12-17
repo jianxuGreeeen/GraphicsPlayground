@@ -12,6 +12,9 @@ public:
 
 	HWND GetWnd() const { return hWnd; }
 	const WindowSettings& GetSettings() const { return Settings; }
+	float GetWidth() const;
+	float GetHeight() const;
+
 private:
 	HINSTANCE hInst;
 	int nCmdShow;
@@ -22,6 +25,8 @@ private:
 	WCHAR szTitle[MaxStringC];			 // The title bar text
 	WCHAR szWindowClass[MaxStringC];	 // the main window class name
 	WindowSettings Settings;
+	RECT ClientRect;
 
+	void UpdateRect();
 };
 

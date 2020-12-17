@@ -1,7 +1,8 @@
 #include "Graphics.h"
-#include <stdexcept>
 #include "App.h"
 #include "Model.h"
+#include <DirectXMath.h>
+#include <stdexcept>
 
 namespace
 {
@@ -15,6 +16,17 @@ namespace
         D3D_FEATURE_LEVEL_9_1
     };
     constexpr int NumFeatureLevels = 5;
+
+    GraphicsBuffer* CreateBuffer(const GraphicsBufferDesc* apDesc, const GraphicsBufferData* apData, GraphicsDevice& arDevice)
+    {
+        GraphicsBuffer* pbuffer = nullptr;
+        auto hr = arDevice.CreateBuffer(apDesc, apData, &pbuffer);
+        if (FAILED(hr))
+        {
+            throw new std::runtime_error("Graphics CreateBuffer failed");
+        }
+        return pbuffer;
+    }
 }
 
 void Graphics::Init()
@@ -22,6 +34,7 @@ void Graphics::Init()
     InitFactory();
     InitAdapter();
     InitDevice();
+    InitConstantBuffers();
 }
 
 void Graphics::PrepForWindow(const App& arApp)
@@ -45,9 +58,25 @@ void Graphics::AddItemToDraw(Model* const apModel, const ModelInstance& arInstan
     ItemsToDraw[apModel].push_back(arInstanceData);
 }
 
-void Graphics::Update()
+void Graphics::Update(const App& arApp)
 {
     ItemsToDraw.clear();
+
+    const auto width = arApp.GetWidth();
+    const auto height = arApp.GetHeight();
+
+    using namespace DirectX;
+    ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), width / height, 0.01f, 100.0f);
+
+    XMVECTOR eyePosition = XMVectorSet(0, 0, -1, 1);
+    XMVECTOR focusPoint = XMVectorSet(0, 0, 0, 1);
+    XMVECTOR upDirection = XMVectorSet(0, 1, 0, 0);
+    ViewMatrix = XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
+
+
+    static float angle = 0.0f;
+    XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
+    WorldMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
 }
 
 void Graphics::Draw()
@@ -60,16 +89,20 @@ void Graphics::Draw()
 
     viewport.TopLeftX = 0;
     viewport.TopLeftY = 0;
-    viewport.Width = Cam.VP.Width;
     viewport.Height = Cam.VP.Height;
+    viewport.Width = Cam.VP.Width;
+    viewport.MinDepth = 0.0f;
+    viewport.MaxDepth = 1.0f;
 
     //Set the Viewport
     spDeviceCtx->RSSetViewports(1, &viewport);
+    spDeviceCtx->VSSetConstantBuffers(0, 3, ConstantBuffers.data());
 
     for (auto& kvp : ItemsToDraw)
     {
         auto* pmodel = kvp.first;
         auto* pvbuffer = pmodel->GetVBuffer();
+        auto* pibuffer = pmodel->GetIBuffer();
 
         auto& rvshaderData = ShaderMgr.GetVShader(pmodel->GetVShader());
         auto& rvshader = *(rvshaderData.spShader.Get());
@@ -77,17 +110,19 @@ void Graphics::Draw()
         auto& rpshaderData = ShaderMgr.GetPShader(pmodel->GetPShader());
         auto& rpshader = *(rpshaderData.spShader.Get());
 
+        UpdateCBufferData(rvshaderData.cBufferTypes);
+
         spDeviceCtx->VSSetShader(&rvshader, nullptr, 0);
         spDeviceCtx->PSSetShader(&rpshader, nullptr, 0);
 
         UINT stride = sizeof(Vertex);
         UINT offset = 0;
         spDeviceCtx->IASetVertexBuffers(0, 1, &pvbuffer, &stride, &offset);
+        spDeviceCtx->IASetIndexBuffer(pibuffer, DXGI_FORMAT_R32_UINT, 0);
         spDeviceCtx->IASetInputLayout(&rvlayout);
         spDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        const auto numVerts = static_cast<UINT>(pmodel->GetVerts().size());
-        spDeviceCtx->Draw(numVerts, 0);
+        spDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
     }
 
     EndFrame();
@@ -96,6 +131,14 @@ void Graphics::Draw()
 
 void Graphics::Shutdown()
 {
+    for (auto*& pbuffer : ConstantBuffers)
+    {
+        if (pbuffer != nullptr)
+        {
+            pbuffer->Release();
+            pbuffer = nullptr;
+        }
+    }
 }
 
 void Graphics::InitAdapter()
@@ -283,4 +326,43 @@ void Graphics::ValidateDevice()
     {
         throw new std::runtime_error("Cannot load shaders without a device set");
     }
+}
+
+void Graphics::UpdateCBufferData(std::array< GlobalDataType, 3>& arUpdateInfo)
+{
+    int idx = 0;
+    for (auto globalType : arUpdateInfo)
+    {
+        auto* pcbuffer = ConstantBuffers[idx];
+
+        switch (globalType)
+        {
+        case GlobalDataType::ProjectionMatrix:
+            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &ProjectionMatrix, 0, 0);
+            break;
+        case GlobalDataType::ViewMatrix:
+            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &ViewMatrix, 0, 0);
+            break;
+        case GlobalDataType::WorldMatrix:
+            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &WorldMatrix, 0, 0);
+            break;
+        case GlobalDataType::None: // same as default, do nothing
+        default:
+            break;
+        }
+        ++idx;
+    }    
+}
+
+void Graphics::InitConstantBuffers()
+{
+    D3D11_BUFFER_DESC constantBufferDesc = {};
+    constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
+    constantBufferDesc.ByteWidth = sizeof(Matrix);
+    constantBufferDesc.CPUAccessFlags = 0;
+    constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+
+    ConstantBuffers[0] = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
+    ConstantBuffers[1] = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
+    ConstantBuffers[2] = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
 }

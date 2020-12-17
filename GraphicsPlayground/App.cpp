@@ -65,8 +65,25 @@ bool App::Update()
             DispatchMessage(&msg);
         }
     }
+
+    UpdateRect();
     
     return running;
+}
+
+float App::GetWidth() const 
+{ 
+    return static_cast<float>(ClientRect.right - ClientRect.left);
+}
+
+float App::GetHeight() const 
+{ 
+    return static_cast<float>(ClientRect.bottom - ClientRect.top);
+}
+
+void App::UpdateRect()
+{
+    GetClientRect(hWnd, &ClientRect);
 }
 
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
