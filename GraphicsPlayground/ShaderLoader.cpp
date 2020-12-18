@@ -40,12 +40,7 @@ namespace VShaderLoader
 			throw new std::runtime_error("LoadBasicVShader failed to CreateInputLayout");
 		}
 
-		std::array< GlobalDataType, 3> cBufferTypes;
-		cBufferTypes[0] = GlobalDataType::ProjectionMatrix;
-		cBufferTypes[1] = GlobalDataType::ViewMatrix;
-		cBufferTypes[2] = GlobalDataType::WorldMatrix;
-
-		return std::make_unique<VShaderInfo>(*pvs, *pvlayout, cBufferTypes);
+		return std::make_unique<VShaderInfo>(*pvs, *pvlayout);
 	}
 };
 

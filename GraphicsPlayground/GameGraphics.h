@@ -1,7 +1,9 @@
 #pragma once
+#include "Camera.h"
 #include "Model.h"
 #include <memory>
 
+class App;
 class Graphics;
 
 /*
@@ -13,8 +15,8 @@ public:
 	GameGraphics() = default;
 	~GameGraphics() = default;
 
-	void LoadResources(Graphics& arGfx);
-	void Update(Graphics& arGfx);
+	void Init(App& arApp, Graphics& arGfx);
+	void Update(App& arApp, Graphics& arGfx);
 
 private:
 	GameGraphics(GameGraphics&) = delete;
@@ -24,5 +26,9 @@ private:
 
 	std::unique_ptr<Model> spTriangle;
 	std::unique_ptr<Model> spQuad;
+
+	void LoadResources(Graphics& arGfx);
+
+	Camera Cam;
 };
 

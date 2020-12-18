@@ -7,9 +7,9 @@ std::unique_ptr<Model> Model::CreateTriangle(float aPosZ)
 {
 	std::vector<Vertex> verts =
 	{
-		{ Vector3(0.0f, 0.5f, aPosZ), Color4(1.0f, 0.0f, 0.0f, 1.0) },
-		{ Vector3(0.5f, -0.5f, aPosZ), Color4(0.0f, 1.0f, 0.0f, 1.0) },
-		{ Vector3 (-0.5f, -0.5f, aPosZ), Color4(0.0f, 0.0f, 1.0f, 1.0) },
+		{ Float3(0.0f, 0.5f, aPosZ), Color4(1.0f, 0.0f, 0.0f, 1.0) },
+		{ Float3(0.5f, -0.5f, aPosZ), Color4(0.0f, 1.0f, 0.0f, 1.0) },
+		{ Float3(-0.5f, -0.5f, aPosZ), Color4(0.0f, 0.0f, 1.0f, 1.0) },
 	};
 
 	std::vector<Index> indices =
@@ -24,10 +24,10 @@ std::unique_ptr<Model> Model::CreateQuad(float aPosZ)
 {
 	std::vector<Vertex> verts =
 	{
-		{ Vector3(-0.5f, -0.5f, aPosZ), Color4(1.0f, 0.0f, 0.0f, 1.0) },
-		{ Vector3(-0.5f,  0.5f, aPosZ), Color4(0.0f, 1.0f, 0.0f, 1.0) },
-		{ Vector3(0.5f,  0.5f, aPosZ), Color4(0.0f, 0.0f, 1.0f, 1.0) },
-		{ Vector3(0.5f, -0.5f, aPosZ), Color4(0.0f, 1.0f, 0.0f, 1.0) },
+		{ Float3(-0.5f, -0.5f, aPosZ), Color4(1.0f, 0.0f, 0.0f, 1.0) },
+		{ Float3(-0.5f,  0.5f, aPosZ), Color4(0.0f, 1.0f, 0.0f, 1.0) },
+		{ Float3(0.5f,  0.5f, aPosZ), Color4(0.0f, 0.0f, 1.0f, 1.0) },
+		{ Float3(0.5f, -0.5f, aPosZ), Color4(0.0f, 1.0f, 0.0f, 1.0) },
 	};
 
 	std::vector<Index> indices =

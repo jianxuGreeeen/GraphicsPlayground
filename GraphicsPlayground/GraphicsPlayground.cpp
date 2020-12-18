@@ -42,7 +42,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         gfx.LoadResources();
 
         GameGraphics gameGfx;
-        gameGfx.LoadResources(gfx);
+        gameGfx.Init(app, gfx);
 
         bool running = false;
         do
@@ -50,8 +50,8 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
             running = app.Update();
             if (running)
             {
-                gfx.Update(app);
-                gameGfx.Update(gfx);
+                gfx.Update();
+                gameGfx.Update(app, gfx);
                 gfx.Draw();
             }
         } while (running);

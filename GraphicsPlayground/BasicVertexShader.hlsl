@@ -10,27 +10,16 @@ struct VS_OUTPUT
     float4 Pos : SV_POSITION;
 };
 
-cbuffer PerApplication : register(b0)
+cbuffer PerObject : register(b0)
 {
-    matrix projectionMatrix;
-}
-
-cbuffer PerFrame : register(b1)
-{
-    matrix viewMatrix;
-}
-
-cbuffer PerObject : register(b2)
-{
-    matrix worldMatrix;
+    matrix WVP;
 }
 
 VS_OUTPUT main(VS_INPUT input)
 {
     VS_OUTPUT output;
 
-    matrix mvp = mul(projectionMatrix, mul(viewMatrix, worldMatrix));
-    output.Pos = mul(mvp, float4(input.Pos, 1.0f));
+    output.Pos = mul(float4(input.Pos, 1.0f), WVP);
     output.Color = input.Color;
 
     return output;

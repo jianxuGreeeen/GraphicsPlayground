@@ -14,8 +14,7 @@
 struct ModelInstance
 {
 	//TODO: Add instance data here
-	PShaderKey PShader = PShaderKey::BasicShader;
-	VShaderKey VShader = VShaderKey::BasicShader;
+	Matrix WorldMatrix;
 };
 
 class App;
@@ -31,12 +30,15 @@ public:
 
 	void Init();
 	void PrepForWindow(const App& arApp);
-	void Update(const App& arApp);
+	void Update();
 	void Draw();
 	void Shutdown();
 
 	void LoadResources();
 	void AddItemToDraw(Model* const apModel, const ModelInstance& arInstanceData);
+
+	void SetProjectionMatrix(const Matrix& arProjMatrix) { ProjectionMatrix = arProjMatrix; }
+	void SetViewMatrix(const Matrix& arViewMatrix) { ViewMatrix = arViewMatrix; }
 
 	GraphicsDevice& GetDevice() { return *spDevice; }
 	ShaderManager& GetShaderMgr() { return ShaderMgr; }
@@ -60,15 +62,14 @@ private:
 	GraphicsInterfaceObject<GraphicsDepthStencil> spDepthStencil;
 	GraphicsInterfaceObject<GraphicsDepthStencilBuffer> spDepthStencilBuffer;
 
-	std::array<GraphicsBuffer*, 3> ConstantBuffers;
+	GraphicsInterfaceObject <GraphicsBuffer> spConstantBuffer;
 
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
-	Camera Cam;
 	ShaderManager ShaderMgr;
 
+	GraphicsViewPort ViewPort;
 	Matrix ProjectionMatrix;
 	Matrix ViewMatrix;
-	Matrix WorldMatrix;
 
 	std::map<Model* const, std::vector<ModelInstance>> ItemsToDraw;
 
@@ -85,5 +86,4 @@ private:
 	void PresentFrame();
 
 	void ValidateDevice();
-	void UpdateCBufferData(std::array< GlobalDataType, 3>& arUpdateInfo);
 };

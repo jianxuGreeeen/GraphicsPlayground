@@ -1,0 +1,16 @@
+This to to keep a record of thoughts as I add/make changes.
+Primarily, how to properly structure/architect is constantly in my mind.
+I have the two Graphics and GameGraphics to split game side and game agnostic work up.
+
+Thoughts on Graphics:
+Trying to strike a balance between over engineering and just making things work for now.
+I would like the Graphics class to just take in data and operate on it.
+No interaction back up to the GameGraphics layer.
+I attempted to do a quick instancing/optimization by grouping draws by models.
+Models share the same vertex and shader configuration.
+A potential rework may be to group by shader configuration and build
+I would also like to maintain just 1 vertex buffer and have models store offsets to their locations.
+
+Thoughts
+I think to encapsulate cameras, models, etc.
+Maybe the concept of a scene class and we can have potentially multiple scenes.

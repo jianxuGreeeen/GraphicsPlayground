@@ -16,6 +16,8 @@ using GraphicsDepthStencilBuffer = ID3D11Texture2D;
 using GraphicsDevice = ID3D11Device;
 using GraphicsDeviceContext = ID3D11DeviceContext;
 using GraphicsFactory = IDXGIFactory;
+using GraphicsViewPort = D3D11_VIEWPORT;
+
 using Index = DWORD;
 using IndexBuffer = ID3D11Buffer;
 using PixelShader = ID3D11PixelShader;

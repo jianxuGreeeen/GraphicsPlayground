@@ -27,6 +27,11 @@ namespace
         }
         return pbuffer;
     }
+
+    // constant buffer indices
+    constexpr int ProjMatrixIdx = 0;
+    constexpr int ViewMatrixIdx = 1;
+    constexpr int WorldMatrixIdx = 2;
 }
 
 void Graphics::Init()
@@ -43,8 +48,15 @@ void Graphics::PrepForWindow(const App& arApp)
     InitRenderTargets();
     InitDepthStencil(arApp);
 
-    Cam.VP.Width = static_cast<float>(arApp.GetSettings().Width);
-    Cam.VP.Height = static_cast<float>(arApp.GetSettings().Height);
+    //Create the Viewport
+    ZeroMemory(&ViewPort, sizeof(GraphicsViewPort));
+    ViewPort.TopLeftX = 0;
+    ViewPort.TopLeftY = 0;
+    ViewPort.Height = static_cast<float>(arApp.GetSettings().Height);
+    ViewPort.Width = static_cast<float>(arApp.GetSettings().Width);
+    ViewPort.MinDepth = 0.0f;
+    ViewPort.MaxDepth = 1.0f;
+    spDeviceCtx->RSSetViewports(1, &ViewPort);
 }
 
 void Graphics::LoadResources()
@@ -59,46 +71,14 @@ void Graphics::AddItemToDraw(Model* const apModel, const ModelInstance& arInstan
     ItemsToDraw[apModel].push_back(arInstanceData);
 }
 
-void Graphics::Update(const App& arApp)
+void Graphics::Update()
 {
     ItemsToDraw.clear();
-
-    const auto width = arApp.GetWidth();
-    const auto height = arApp.GetHeight();
-
-    using namespace DirectX;
-    ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(45.0f), width / height, 0.01f, 100.0f);
-
-    XMVECTOR eyePosition = XMVectorSet(0, 0, -1, 1);
-    XMVECTOR focusPoint = XMVectorSet(0, 0, 0, 1);
-    XMVECTOR upDirection = XMVectorSet(0, 1, 0, 0);
-    ViewMatrix = XMMatrixLookAtLH(eyePosition, focusPoint, upDirection);
-
-
-    static float angle = 0.0f;
-    angle += 0.005f;
-    XMVECTOR rotationAxis = XMVectorSet(0, 0, 1, 0);
-    WorldMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
 }
 
 void Graphics::Draw()
 {
-    BeginFrame();
-
-    //Create the Viewport
-    D3D11_VIEWPORT viewport;
-    ZeroMemory(&viewport, sizeof(D3D11_VIEWPORT));
-
-    viewport.TopLeftX = 0;
-    viewport.TopLeftY = 0;
-    viewport.Height = Cam.VP.Height;
-    viewport.Width = Cam.VP.Width;
-    viewport.MinDepth = 0.0f;
-    viewport.MaxDepth = 1.0f;
-
-    //Set the Viewport
-    spDeviceCtx->RSSetViewports(1, &viewport);
-    spDeviceCtx->VSSetConstantBuffers(0, 3, ConstantBuffers.data());
+    BeginFrame();    
 
     for (auto& kvp : ItemsToDraw)
     {
@@ -112,8 +92,6 @@ void Graphics::Draw()
         auto& rpshaderData = ShaderMgr.GetPShader(pmodel->GetPShader());
         auto& rpshader = *(rpshaderData.spShader.Get());
 
-        UpdateCBufferData(rvshaderData.cBufferTypes);
-
         spDeviceCtx->VSSetShader(&rvshader, nullptr, 0);
         spDeviceCtx->PSSetShader(&rpshader, nullptr, 0);
 
@@ -124,7 +102,17 @@ void Graphics::Draw()
         spDeviceCtx->IASetInputLayout(&rvlayout);
         spDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 
-        spDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
+        auto* pcbuffer = spConstantBuffer.Get();
+        spDeviceCtx->VSSetConstantBuffers(0, 1, &pcbuffer);
+
+        auto& instances = kvp.second;
+        for (auto& rinstance : instances)
+        {
+            const auto wvp = rinstance.WorldMatrix * ViewMatrix * ProjectionMatrix;
+            const auto transposedWvp = DirectX::XMMatrixTranspose(wvp);
+            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &transposedWvp, 0, 0);
+            spDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
+        }
     }
 
     EndFrame();
@@ -133,14 +121,6 @@ void Graphics::Draw()
 
 void Graphics::Shutdown()
 {
-    for (auto*& pbuffer : ConstantBuffers)
-    {
-        if (pbuffer != nullptr)
-        {
-            pbuffer->Release();
-            pbuffer = nullptr;
-        }
-    }
 }
 
 void Graphics::InitAdapter()
@@ -228,10 +208,10 @@ void Graphics::InitSwapChain(const App& arApp)
     sampleDesc.Count = 1;
 
     DXGI_SWAP_CHAIN_DESC desc = {};
-    desc.BufferCount = 2; // triple buffer
+    desc.BufferCount = 1; // double buffer
     desc.BufferDesc = bufferDesc;
     desc.BufferUsage = DXGI_USAGE_RENDER_TARGET_OUTPUT;
-    desc.SwapEffect = DXGI_SWAP_EFFECT_FLIP_DISCARD;
+    desc.SwapEffect = DXGI_SWAP_EFFECT_DISCARD;
     desc.OutputWindow = arApp.GetWnd();
     desc.SampleDesc = sampleDesc;
     desc.Windowed = true; // TODO : customizable setting
@@ -305,30 +285,13 @@ void Graphics::BeginFrame()
 
     //Set our Render Target
     auto* prtv = spRenderTarget.Get();
-    spDeviceCtx->OMSetRenderTargets(1, &prtv, spDepthStencil.Get());
     spDeviceCtx->ClearRenderTargetView(prtv, clearColor);
+    spDeviceCtx->OMSetRenderTargets(1, &prtv, spDepthStencil.Get());
     spDeviceCtx->ClearDepthStencilView(spDepthStencil.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void Graphics::EndFrame()
 {
-   /* {
-        D3D12_RESOURCE_BARRIER barrier;
-        barrier.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-        barrier.Flags = D3D12_RESOURCE_BARRIER_FLAG_NONE;
-        barrier.Transition.pResource = spRenderTargets[FrameIndex].Get();
-        barrier.Transition.StateBefore = D3D12_RESOURCE_STATE_RENDER_TARGET;
-        barrier.Transition.StateAfter = D3D12_RESOURCE_STATE_PRESENT;
-        barrier.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-
-        spCmdList->ResourceBarrier(1, &barrier);
-    }
-
-    auto hr = spCmdList->Close();
-    if (FAILED(hr))
-    {
-        throw std::runtime_error("Failed to end graphics frame");
-    }*/
 }
 
 void Graphics::PresentFrame()
@@ -349,32 +312,6 @@ void Graphics::ValidateDevice()
     }
 }
 
-void Graphics::UpdateCBufferData(std::array< GlobalDataType, 3>& arUpdateInfo)
-{
-    int idx = 0;
-    for (auto globalType : arUpdateInfo)
-    {
-        auto* pcbuffer = ConstantBuffers[idx];
-
-        switch (globalType)
-        {
-        case GlobalDataType::ProjectionMatrix:
-            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &ProjectionMatrix, 0, 0);
-            break;
-        case GlobalDataType::ViewMatrix:
-            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &ViewMatrix, 0, 0);
-            break;
-        case GlobalDataType::WorldMatrix:
-            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &WorldMatrix, 0, 0);
-            break;
-        case GlobalDataType::None: // same as default, do nothing
-        default:
-            break;
-        }
-        ++idx;
-    }    
-}
-
 void Graphics::InitConstantBuffers()
 {
     D3D11_BUFFER_DESC constantBufferDesc = {};
@@ -383,7 +320,5 @@ void Graphics::InitConstantBuffers()
     constantBufferDesc.CPUAccessFlags = 0;
     constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
 
-    ConstantBuffers[0] = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
-    ConstantBuffers[1] = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
-    ConstantBuffers[2] = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
+    spConstantBuffer = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
 }
