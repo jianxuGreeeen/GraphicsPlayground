@@ -56,7 +56,6 @@ void Graphics::PrepForWindow(const App& arApp)
     ViewPort.Width = static_cast<float>(arApp.GetSettings().Width);
     ViewPort.MinDepth = 0.0f;
     ViewPort.MaxDepth = 1.0f;
-    spDeviceCtx->RSSetViewports(1, &ViewPort);
 }
 
 void Graphics::LoadResources()
@@ -277,6 +276,26 @@ void Graphics::InitDepthStencil(const App& arApp)
         throw new std::runtime_error("InitDepthStencil failed CreateDepthStencilView");
     }
     spDepthStencil = pdepthStencil;
+
+    D3D11_RASTERIZER_DESC rasterizerDesc = {};
+    rasterizerDesc.AntialiasedLineEnable = false;
+    rasterizerDesc.CullMode = D3D11_CULL_BACK;
+    rasterizerDesc.DepthBias = 0;
+    rasterizerDesc.DepthBiasClamp = 0.0f;
+    rasterizerDesc.DepthClipEnable = true;
+    rasterizerDesc.FillMode = D3D11_FILL_SOLID;
+    rasterizerDesc.FrontCounterClockwise = false;
+    rasterizerDesc.MultisampleEnable = false;
+    rasterizerDesc.ScissorEnable = false;
+    rasterizerDesc.SlopeScaledDepthBias = 0.0f;
+
+    GraphicsRasterizerState* prasterizerState = nullptr;
+    hr = spDevice->CreateRasterizerState(&rasterizerDesc, &prasterizerState);
+    if (FAILED(hr))
+    {
+        throw new std::runtime_error("InitDepthStencil failed CreateRasterizerState");
+    }
+    spRasterizerState = prasterizerState;
 }
 
 void Graphics::BeginFrame()
@@ -288,6 +307,9 @@ void Graphics::BeginFrame()
     spDeviceCtx->ClearRenderTargetView(prtv, clearColor);
     spDeviceCtx->OMSetRenderTargets(1, &prtv, spDepthStencil.Get());
     spDeviceCtx->ClearDepthStencilView(spDepthStencil.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    spDeviceCtx->RSSetState(spRasterizerState.Get());
+    spDeviceCtx->RSSetViewports(1, &ViewPort);
+
 }
 
 void Graphics::EndFrame()

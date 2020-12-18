@@ -10,13 +10,13 @@ using GraphicsAdapter = IDXGIAdapter;
 using GraphicsBuffer = ID3D11Buffer;
 using GraphicsBufferDesc = D3D11_BUFFER_DESC;
 using GraphicsBufferData = D3D11_SUBRESOURCE_DATA;
-using GraphicsDebug = ID3D11Debug;
 using GraphicsDepthStencil = ID3D11DepthStencilView;
 using GraphicsDepthStencilBuffer = ID3D11Texture2D;
 using GraphicsDevice = ID3D11Device;
 using GraphicsDeviceContext = ID3D11DeviceContext;
 using GraphicsFactory = IDXGIFactory;
 using GraphicsViewPort = D3D11_VIEWPORT;
+using GraphicsRasterizerState = ID3D11RasterizerState;
 
 using Index = DWORD;
 using IndexBuffer = ID3D11Buffer;

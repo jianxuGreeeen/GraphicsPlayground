@@ -49,20 +49,18 @@ private:
 	Graphics& operator = (Graphics&) = delete;
 	Graphics& operator = (Graphics&&) = delete;
 
-#ifdef _DEBUG
-	GraphicsInterfaceObject<GraphicsDebug> spDebug;
-#endif // _DEBUG
-
-	GraphicsInterfaceObject<GraphicsFactory> spFactory;
-	GraphicsInterfaceObject<GraphicsAdapter> spAdapter;
-	GraphicsInterfaceObject<GraphicsDevice> spDevice;
-	GraphicsInterfaceObject<GraphicsDeviceContext> spDeviceCtx;
-	GraphicsInterfaceObject<SwapChain> spSwapChain;
-	GraphicsInterfaceObject<RenderTarget> spRenderTarget;
-	GraphicsInterfaceObject<GraphicsDepthStencil> spDepthStencil;
-	GraphicsInterfaceObject<GraphicsDepthStencilBuffer> spDepthStencilBuffer;
-
-	GraphicsInterfaceObject <GraphicsBuffer> spConstantBuffer;
+	template<class T>
+	using GIO = GraphicsInterfaceObject<T>;
+	GIO<GraphicsFactory> spFactory;
+	GIO<GraphicsAdapter> spAdapter;
+	GIO<GraphicsDevice> spDevice;
+	GIO<GraphicsDeviceContext> spDeviceCtx;
+	GIO<SwapChain> spSwapChain;
+	GIO<RenderTarget> spRenderTarget;
+	GIO<GraphicsDepthStencil> spDepthStencil;
+	GIO<GraphicsDepthStencilBuffer> spDepthStencilBuffer;
+	GIO<GraphicsRasterizerState> spRasterizerState;
+	GIO<GraphicsBuffer> spConstantBuffer;
 
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
 	ShaderManager ShaderMgr;

@@ -15,5 +15,5 @@ struct Vertex
 	Float3 Pos;
 	Color4	Color;
 
-	static const int ByteWidth = 7;
+	static const int ByteWidth = 7*sizeof(float);
 };

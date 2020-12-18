@@ -17,13 +17,16 @@ void GameGraphics::LoadResources(Graphics& arGfx)
 
 	spQuad = Model::CreateQuad();
 	spQuad->Init(rdevice);
+
+    spCube = Model::CreateCube();
+    spCube->Init(rdevice);
 }
 
 void GameGraphics::Update(App& arApp, Graphics& arGfx)
 {
     using namespace DirectX;
     Cam.EyePos = XMVectorSet(0.0f, 0, 0, 0);
-    Cam.FocusPos = XMVectorSet(0, 0, 1, 0);
+    Cam.FocusPos = XMVectorSet(0, 0, 100, 0);
 
     const Vector camUp = XMVectorSet(0, 1, 0, 0);
     auto viewMatrix = XMMatrixLookAtLH(Cam.EyePos, Cam.FocusPos, camUp);
@@ -40,20 +43,19 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     angle1 += 0.005f;
 
     static float angle2 = 0.0f;
-    angle2 += 0.002f;
+    angle2 -= 0.005f;
 
     using namespace DirectX;
-    Vector rotationAxis = XMVectorSet(0, 0, 1, 0);
-    auto worldMatrix1 = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle1)) * XMMatrixTranslation(1.0f, 0.0f, 3.0f);
-    auto worldMatrix2 = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle2)) * XMMatrixTranslation(-1.0f, 0.0f, 3.0f);
+    const auto rotationAxis1 = XMVectorSet(0, 1, 1, 0);
+    const auto rotationAxis2 = XMVectorSet(1, 1, 0, 0);
+    const auto worldMatrix1 = XMMatrixRotationAxis(rotationAxis1, XMConvertToRadians(angle1)) * XMMatrixTranslation(1.0f, 0.0f, 3.0f);
+    const auto worldMatrix2 = XMMatrixRotationAxis(rotationAxis2, XMConvertToRadians(angle2)) * XMMatrixTranslation(-1.0f, 0.0f, 3.0f);
 
     ModelInstance worldInstance1{};
     ModelInstance worldInstance2{};
     worldInstance1.WorldMatrix = worldMatrix1;
     worldInstance2.WorldMatrix = worldMatrix2;
 
-	//arGfx.AddItemToDraw(spTriangle.get(), triInstance1);
-    //arGfx.AddItemToDraw(spTriangle.get(), triInstance2);
-	arGfx.AddItemToDraw(spQuad.get(), worldInstance1);
-    arGfx.AddItemToDraw(spQuad.get(), worldInstance2);
+	arGfx.AddItemToDraw(spCube.get(), worldInstance1);
+    arGfx.AddItemToDraw(spCube.get(), worldInstance2);
 }

@@ -35,14 +35,15 @@ public:
 	VertexBuffer* const  GetVBuffer() { return spVBuffer.Get(); }
 	IndexBuffer* const  GetIBuffer() { return spIBuffer.Get(); }
 
-	int NumIndices() const { return sizeof(Indices); }
+	int NumIndices() const { return static_cast<int>(Indices.size()); }
 
-	static std::unique_ptr<Model> CreateTriangle(float aPosZ = 0.5f);
-	static std::unique_ptr<Model> CreateQuad(float aPosZ = 0.5f);
+	static std::unique_ptr<Model> CreateTriangle();
+	static std::unique_ptr<Model> CreateQuad();
+	static std::unique_ptr<Model> CreateCube();
 
 private:
 
-	int NumVerts() const { return sizeof(Verts); }
+	int NumVerts() const { return static_cast<int>(Verts.size()); }
 	int NumTriangles() const { return NumIndices() / 3; }
 
 	static ModelId sId;

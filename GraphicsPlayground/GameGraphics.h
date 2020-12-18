@@ -26,6 +26,7 @@ private:
 
 	std::unique_ptr<Model> spTriangle;
 	std::unique_ptr<Model> spQuad;
+	std::unique_ptr<Model> spCube;
 
 	void LoadResources(Graphics& arGfx);
 
