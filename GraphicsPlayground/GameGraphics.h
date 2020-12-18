@@ -23,5 +23,6 @@ private:
 	GameGraphics& operator = (GameGraphics&&) = delete;
 
 	std::unique_ptr<Model> spTriangle;
+	std::unique_ptr<Model> spQuad;
 };
 

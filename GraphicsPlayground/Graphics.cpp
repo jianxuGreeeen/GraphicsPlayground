@@ -41,6 +41,7 @@ void Graphics::PrepForWindow(const App& arApp)
 {
     InitSwapChain(arApp);
     InitRenderTargets();
+    InitDepthStencil(arApp);
 
     Cam.VP.Width = static_cast<float>(arApp.GetSettings().Width);
     Cam.VP.Height = static_cast<float>(arApp.GetSettings().Height);
@@ -75,7 +76,8 @@ void Graphics::Update(const App& arApp)
 
 
     static float angle = 0.0f;
-    XMVECTOR rotationAxis = XMVectorSet(0, 1, 1, 0);
+    angle += 0.005f;
+    XMVECTOR rotationAxis = XMVectorSet(0, 0, 1, 0);
     WorldMatrix = XMMatrixRotationAxis(rotationAxis, XMConvertToRadians(angle));
 }
 
@@ -164,10 +166,7 @@ void Graphics::InitAdapter()
     {
         throw std::runtime_error("Failed to init graphics adapter");
     }
-    else
-    {
-        spAdapter = padapter;
-    }
+    spAdapter = padapter;
 }
 
 void Graphics::InitFactory()
@@ -178,10 +177,7 @@ void Graphics::InitFactory()
     {
         throw std::runtime_error("Failed CreateDXGIFactory2");
     }
-    else
-    {
-        spFactory = pfactory;
-    }
+    spFactory = pfactory;
 }
 
 void Graphics::InitDevice()
@@ -207,11 +203,9 @@ void Graphics::InitDevice()
     {
         throw std::runtime_error("Failed D3D11CreateDevice");
     }
-    else
-    {
-        spDevice = pdevice;
-        spDeviceCtx = pdeviceCtx;
-    }
+    
+    spDevice = pdevice;
+    spDeviceCtx = pdeviceCtx;
 }
 
 void Graphics::InitSwapChain(const App& arApp)
@@ -248,10 +242,7 @@ void Graphics::InitSwapChain(const App& arApp)
     {
         throw std::runtime_error("Failed spFactory->CreateSwapChain");
     }
-    else
-    {
-        spSwapChain = static_cast<SwapChain*>(pswapChain);
-    }
+    spSwapChain = static_cast<SwapChain*>(pswapChain);
 }
 
 void Graphics::InitRenderTargets()
@@ -262,21 +253,50 @@ void Graphics::InitRenderTargets()
     {
         throw std::runtime_error("Failed spSwapChain->GetBuffer");
     }
-    else
-    {
-        RenderTarget* prt = nullptr;
-        hr = spDevice->CreateRenderTargetView(pbuffer, nullptr, &prt);
-        pbuffer->Release();
 
-        if (FAILED(hr))
-        {
-            throw std::runtime_error("Failed CreateRenderTargetView");
-        }
-        else
-        {
-            spRenderTarget = prt;
-        }
+    RenderTarget* prt = nullptr;
+    hr = spDevice->CreateRenderTargetView(pbuffer, nullptr, &prt);
+    pbuffer->Release();
+
+    if (FAILED(hr))
+    {
+        throw std::runtime_error("Failed CreateRenderTargetView");
     }
+    spRenderTarget = prt;
+}
+
+void Graphics::InitDepthStencil(const App& arApp)
+{
+    auto& rwindowSettings = arApp.GetSettings();
+
+    D3D11_TEXTURE2D_DESC desc = {};
+    desc.Width = rwindowSettings.Width;
+    desc.Height = rwindowSettings.Height;
+    desc.MipLevels = 1;
+    desc.ArraySize = 1;
+    desc.Format = DXGI_FORMAT_D24_UNORM_S8_UINT;
+    desc.SampleDesc.Count = 1;
+    desc.SampleDesc.Quality = 0;
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.BindFlags = D3D11_BIND_DEPTH_STENCIL;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+
+    GraphicsDepthStencilBuffer* pbuffer = nullptr;
+    auto hr = spDevice->CreateTexture2D(&desc, nullptr, &pbuffer);
+    if (FAILED(hr))
+    {
+        throw new std::runtime_error("InitDepthStencil failed CreateTexture2D");
+    }
+    spDepthStencilBuffer = pbuffer;
+
+    GraphicsDepthStencil* pdepthStencil = nullptr;
+    hr = spDevice->CreateDepthStencilView(pbuffer, nullptr, &pdepthStencil);
+    if (FAILED(hr))
+    {
+        throw new std::runtime_error("InitDepthStencil failed CreateDepthStencilView");
+    }
+    spDepthStencil = pdepthStencil;
 }
 
 void Graphics::BeginFrame()
@@ -285,8 +305,9 @@ void Graphics::BeginFrame()
 
     //Set our Render Target
     auto* prtv = spRenderTarget.Get();
-    spDeviceCtx->OMSetRenderTargets(1, &prtv, nullptr);
+    spDeviceCtx->OMSetRenderTargets(1, &prtv, spDepthStencil.Get());
     spDeviceCtx->ClearRenderTargetView(prtv, clearColor);
+    spDeviceCtx->ClearDepthStencilView(spDepthStencil.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
 }
 
 void Graphics::EndFrame()

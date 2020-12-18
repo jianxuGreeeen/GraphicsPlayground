@@ -57,6 +57,9 @@ private:
 	GraphicsInterfaceObject<GraphicsDeviceContext> spDeviceCtx;
 	GraphicsInterfaceObject<SwapChain> spSwapChain;
 	GraphicsInterfaceObject<RenderTarget> spRenderTarget;
+	GraphicsInterfaceObject<GraphicsDepthStencil> spDepthStencil;
+	GraphicsInterfaceObject<GraphicsDepthStencilBuffer> spDepthStencilBuffer;
+
 	std::array<GraphicsBuffer*, 3> ConstantBuffers;
 
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
@@ -75,6 +78,7 @@ private:
 	void InitDevice();
 	void InitSwapChain(const App& arApp);
 	void InitRenderTargets();
+	void InitDepthStencil(const App& arApp);
 
 	void BeginFrame();
 	void EndFrame();

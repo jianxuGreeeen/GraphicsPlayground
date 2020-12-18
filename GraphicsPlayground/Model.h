@@ -37,8 +37,8 @@ public:
 
 	int NumIndices() const { return sizeof(Indices); }
 
-	static std::unique_ptr<Model> CreateTriangle();
-	static std::unique_ptr<Model> CreateQuad();
+	static std::unique_ptr<Model> CreateTriangle(float aPosZ = 0.5f);
+	static std::unique_ptr<Model> CreateQuad(float aPosZ = 0.5f);
 
 private:
 
