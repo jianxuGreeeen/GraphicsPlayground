@@ -1,5 +1,6 @@
 #pragma once
 #include "MathTypes.h"
+
 struct Vertex
 {
 	Vertex() 
@@ -7,9 +8,9 @@ struct Vertex
 		, Color(0.0f, 0.0f, 0.0f, 0.0f)
 	{}
 
-	Vertex(Float3 aPos, Color4 aColor)
-		: Pos(std::move(aPos))
-		, Color(std::move(aColor))
+	Vertex(const Float3& arPos, const Color4& arColor)
+		: Pos(arPos)
+		, Color(arColor)
 	{};
 
 	Float3 Pos;

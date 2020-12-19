@@ -34,14 +34,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     app.Init(hInstance, nCmdShow);
     app.MakeWindow(wndSettings);
 
-    Graphics gfx = {};
+    Graphics gfx;
+    GameGraphics gameGfx;
     try
     {
         gfx.Init();
         gfx.PrepForWindow(app);
         gfx.LoadResources();
 
-        GameGraphics gameGfx;
         gameGfx.Init(app, gfx);
 
         bool running = false;
@@ -62,6 +62,7 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         std::cout << e.what() << std::endl;
     }
 
+    gameGfx.Shutdown(app, gfx);
     gfx.Shutdown();
     return 0;
 }

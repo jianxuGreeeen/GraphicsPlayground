@@ -1,7 +1,7 @@
 #include "Graphics.h"
 #include "App.h"
-#include "Model.h"
-#include <DirectXMath.h>
+#include "Release.h"
+
 #include <stdexcept>
 
 namespace
@@ -16,22 +16,6 @@ namespace
         D3D_FEATURE_LEVEL_9_1
     };
     constexpr int NumFeatureLevels = 5;
-
-    GraphicsBuffer* CreateBuffer(const GraphicsBufferDesc* apDesc, const GraphicsBufferData* apData, GraphicsDevice& arDevice)
-    {
-        GraphicsBuffer* pbuffer = nullptr;
-        auto hr = arDevice.CreateBuffer(apDesc, apData, &pbuffer);
-        if (FAILED(hr))
-        {
-            throw new std::runtime_error("Graphics CreateBuffer failed");
-        }
-        return pbuffer;
-    }
-
-    // constant buffer indices
-    constexpr int ProjMatrixIdx = 0;
-    constexpr int ViewMatrixIdx = 1;
-    constexpr int WorldMatrixIdx = 2;
 }
 
 void Graphics::Init()
@@ -39,7 +23,6 @@ void Graphics::Init()
     InitFactory();
     InitAdapter();
     InitDevice();
-    InitConstantBuffers();
 }
 
 void Graphics::PrepForWindow(const App& arApp)
@@ -47,6 +30,7 @@ void Graphics::PrepForWindow(const App& arApp)
     InitSwapChain(arApp);
     InitRenderTargets();
     InitDepthStencil(arApp);
+    InitRasterizerStates();
 
     //Create the Viewport
     ZeroMemory(&ViewPort, sizeof(GraphicsViewPort));
@@ -61,7 +45,7 @@ void Graphics::PrepForWindow(const App& arApp)
 void Graphics::LoadResources()
 {
     ValidateDevice();
-    ShaderMgr.Load(*spDevice);
+    ShaderMgr.Load(*this);
 }
 
 void Graphics::AddItemToDraw(Model* const apModel, const ModelInstance& arInstanceData)
@@ -79,38 +63,24 @@ void Graphics::Draw()
 {
     BeginFrame();    
 
-    for (auto& kvp : ItemsToDraw)
+    // TODO : allow models to select shader to use
+    auto* pshader = ShaderMgr.GetShader(ShaderKey::BasicShader);
+    if (pshader != nullptr)
     {
-        auto* pmodel = kvp.first;
-        auto* pvbuffer = pmodel->GetVBuffer();
-        auto* pibuffer = pmodel->GetIBuffer();
+        pshader->Update(*this);
 
-        auto& rvshaderData = ShaderMgr.GetVShader(pmodel->GetVShader());
-        auto& rvshader = *(rvshaderData.spShader.Get());
-        auto& rvlayout = *(rvshaderData.spLayout);
-        auto& rpshaderData = ShaderMgr.GetPShader(pmodel->GetPShader());
-        auto& rpshader = *(rpshaderData.spShader.Get());
-
-        spDeviceCtx->VSSetShader(&rvshader, nullptr, 0);
-        spDeviceCtx->PSSetShader(&rpshader, nullptr, 0);
-
-        UINT stride = sizeof(Vertex);
-        UINT offset = 0;
-        spDeviceCtx->IASetVertexBuffers(0, 1, &pvbuffer, &stride, &offset);
-        spDeviceCtx->IASetIndexBuffer(pibuffer, DXGI_FORMAT_R32_UINT, 0);
-        spDeviceCtx->IASetInputLayout(&rvlayout);
-        spDeviceCtx->IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
-
-        auto* pcbuffer = spConstantBuffer.Get();
-        spDeviceCtx->VSSetConstantBuffers(0, 1, &pcbuffer);
-
-        auto& instances = kvp.second;
-        for (auto& rinstance : instances)
+        for (auto& kvp : ItemsToDraw)
         {
-            const auto wvp = rinstance.WorldMatrix * ViewMatrix * ProjectionMatrix;
-            const auto transposedWvp = DirectX::XMMatrixTranspose(wvp);
-            spDeviceCtx->UpdateSubresource(pcbuffer, 0, nullptr, &transposedWvp, 0, 0);
-            spDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
+            auto* pmodel = kvp.first;
+            pmodel->Update(*this);           
+
+            auto& instances = kvp.second;
+            for (auto& rinstance : instances)
+            {
+                const auto wvp = rinstance.WorldMatrix * ViewMatrix * ProjectionMatrix;
+                pshader->UpdateCBuffers(*this, wvp);
+                pDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
+            }
         }
     }
 
@@ -120,13 +90,30 @@ void Graphics::Draw()
 
 void Graphics::Shutdown()
 {
+    ShaderMgr.Shutdown(*this);
+
+    for (auto*& prasterizerState : pRasterizerStates)
+    {
+        Common::Release<GraphicsRasterizerState>(prasterizerState);
+    }
+
+    Common::Release<GraphicsDepthStencilBuffer>(pDepthStencilBuffer);
+    Common::Release<GraphicsDepthStencil>(pDepthStencil);
+
+    Common::Release<RenderTarget>(pRenderTarget);
+    Common::Release<SwapChain>(pSwapChain);
+
+    Common::Release<GraphicsDeviceContext>(pDeviceCtx);
+    Common::Release<GraphicsDevice>(pDevice);
+    Common::Release<GraphicsAdapter>(pAdapter);
+    Common::Release<GraphicsFactory>(pFactory);
 }
 
 void Graphics::InitAdapter()
 {    
     GraphicsAdapter* padapter = nullptr; // adapters are the graphics card (this includes the embedded graphics on the motherboard)
     int adapterIndex = 0;
-    while (spFactory->EnumAdapters(adapterIndex, &padapter) != DXGI_ERROR_NOT_FOUND)
+    while (pFactory->EnumAdapters(adapterIndex, &padapter) != DXGI_ERROR_NOT_FOUND)
     {
         DXGI_ADAPTER_DESC desc;
         padapter->GetDesc(&desc);
@@ -145,7 +132,7 @@ void Graphics::InitAdapter()
     {
         throw std::runtime_error("Failed to init graphics adapter");
     }
-    spAdapter = padapter;
+    pAdapter = padapter;
 }
 
 void Graphics::InitFactory()
@@ -156,7 +143,7 @@ void Graphics::InitFactory()
     {
         throw std::runtime_error("Failed CreateDXGIFactory2");
     }
-    spFactory = pfactory;
+    pFactory = pfactory;
 }
 
 void Graphics::InitDevice()
@@ -168,7 +155,7 @@ void Graphics::InitDevice()
 
     GraphicsDevice* pdevice = nullptr;
     GraphicsDeviceContext* pdeviceCtx = nullptr;
-    auto hr = D3D11CreateDevice(spAdapter.Get(), 
+    auto hr = D3D11CreateDevice(pAdapter, 
         D3D_DRIVER_TYPE_UNKNOWN,
         nullptr, //no software
         flags,
@@ -183,8 +170,8 @@ void Graphics::InitDevice()
         throw std::runtime_error("Failed D3D11CreateDevice");
     }
     
-    spDevice = pdevice;
-    spDeviceCtx = pdeviceCtx;
+    pDevice = pdevice;
+    pDeviceCtx = pdeviceCtx;
 }
 
 void Graphics::InitSwapChain(const App& arApp)
@@ -216,32 +203,32 @@ void Graphics::InitSwapChain(const App& arApp)
     desc.Windowed = true; // TODO : customizable setting
 
     IDXGISwapChain* pswapChain = nullptr;
-    auto hr = spFactory->CreateSwapChain(spDevice.Get(), &desc, &pswapChain);
+    auto hr = pFactory->CreateSwapChain(pDevice, &desc, &pswapChain);
     if (FAILED(hr))
     {
         throw std::runtime_error("Failed spFactory->CreateSwapChain");
     }
-    spSwapChain = static_cast<SwapChain*>(pswapChain);
+    pSwapChain = static_cast<SwapChain*>(pswapChain);
 }
 
 void Graphics::InitRenderTargets()
 {
     SwapChainBuffer* pbuffer = nullptr;
-    auto hr = spSwapChain->GetBuffer(0, IID_PPV_ARGS(&pbuffer));
+    auto hr = pSwapChain->GetBuffer(0, IID_PPV_ARGS(&pbuffer));
     if (FAILED(hr))
     {
         throw std::runtime_error("Failed spSwapChain->GetBuffer");
     }
 
     RenderTarget* prt = nullptr;
-    hr = spDevice->CreateRenderTargetView(pbuffer, nullptr, &prt);
+    hr = pDevice->CreateRenderTargetView(pbuffer, nullptr, &prt);
     pbuffer->Release();
 
     if (FAILED(hr))
     {
         throw std::runtime_error("Failed CreateRenderTargetView");
     }
-    spRenderTarget = prt;
+    pRenderTarget = prt;
 }
 
 void Graphics::InitDepthStencil(const App& arApp)
@@ -262,21 +249,24 @@ void Graphics::InitDepthStencil(const App& arApp)
     desc.MiscFlags = 0;
 
     GraphicsDepthStencilBuffer* pbuffer = nullptr;
-    auto hr = spDevice->CreateTexture2D(&desc, nullptr, &pbuffer);
+    auto hr = pDevice->CreateTexture2D(&desc, nullptr, &pbuffer);
     if (FAILED(hr))
     {
         throw new std::runtime_error("InitDepthStencil failed CreateTexture2D");
     }
-    spDepthStencilBuffer = pbuffer;
+    pDepthStencilBuffer = pbuffer;
 
     GraphicsDepthStencil* pdepthStencil = nullptr;
-    hr = spDevice->CreateDepthStencilView(pbuffer, nullptr, &pdepthStencil);
+    hr = pDevice->CreateDepthStencilView(pbuffer, nullptr, &pdepthStencil);
     if (FAILED(hr))
     {
         throw new std::runtime_error("InitDepthStencil failed CreateDepthStencilView");
     }
-    spDepthStencil = pdepthStencil;
+    pDepthStencil = pdepthStencil;
+}
 
+void Graphics::InitRasterizerStates()
+{
     D3D11_RASTERIZER_DESC rasterizerDesc = {};
     rasterizerDesc.AntialiasedLineEnable = false;
     rasterizerDesc.CullMode = D3D11_CULL_BACK;
@@ -289,13 +279,20 @@ void Graphics::InitDepthStencil(const App& arApp)
     rasterizerDesc.ScissorEnable = false;
     rasterizerDesc.SlopeScaledDepthBias = 0.0f;
 
-    GraphicsRasterizerState* prasterizerState = nullptr;
-    hr = spDevice->CreateRasterizerState(&rasterizerDesc, &prasterizerState);
+    auto hr = pDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerStates[static_cast<int>(RasterizerStates::Default)]);
     if (FAILED(hr))
     {
-        throw new std::runtime_error("InitDepthStencil failed CreateRasterizerState");
+        throw new std::runtime_error("Failed CreateRasterizerState with RasterizerStates::Default");
     }
-    spRasterizerState = prasterizerState;
+
+    rasterizerDesc.CullMode = D3D11_CULL_NONE;
+    rasterizerDesc.FillMode = D3D11_FILL_WIREFRAME;
+
+    hr = pDevice->CreateRasterizerState(&rasterizerDesc, &pRasterizerStates[static_cast<int>(RasterizerStates::WireFrame)]);
+    if (FAILED(hr))
+    {
+        throw new std::runtime_error("Failed CreateRasterizerState with RasterizerStates::WireFrame");
+    }
 }
 
 void Graphics::BeginFrame()
@@ -303,12 +300,11 @@ void Graphics::BeginFrame()
     constexpr float clearColor[] = { 0.53f, 0.77f, 0.96f, 1.0f };
 
     //Set our Render Target
-    auto* prtv = spRenderTarget.Get();
-    spDeviceCtx->ClearRenderTargetView(prtv, clearColor);
-    spDeviceCtx->OMSetRenderTargets(1, &prtv, spDepthStencil.Get());
-    spDeviceCtx->ClearDepthStencilView(spDepthStencil.Get(), D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    spDeviceCtx->RSSetState(spRasterizerState.Get());
-    spDeviceCtx->RSSetViewports(1, &ViewPort);
+    pDeviceCtx->ClearRenderTargetView(pRenderTarget, clearColor);
+    pDeviceCtx->OMSetRenderTargets(1, &pRenderTarget, pDepthStencil);
+    pDeviceCtx->ClearDepthStencilView(pDepthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
+    pDeviceCtx->RSSetState(pRasterizerStates[static_cast<int>(RasterizerState)]);
+    pDeviceCtx->RSSetViewports(1, &ViewPort);
 
 }
 
@@ -319,7 +315,7 @@ void Graphics::EndFrame()
 void Graphics::PresentFrame()
 {
     // present the current backbuffer
-    const auto hr = spSwapChain->Present(0, 0);
+    const auto hr = pSwapChain->Present(0, 0);
     if (FAILED(hr))
     {
         throw std::runtime_error("Failed to present graphics frame");
@@ -328,19 +324,51 @@ void Graphics::PresentFrame()
 
 void Graphics::ValidateDevice()
 {
-    if (spDevice.Get() == nullptr)
+    if (pDevice == nullptr)
     {
         throw new std::runtime_error("Cannot load shaders without a device set");
     }
 }
 
-void Graphics::InitConstantBuffers()
+GraphicsBuffer* Graphics::CreateVertexBuffer(const std::vector<Vertex>& arVerts)
 {
-    D3D11_BUFFER_DESC constantBufferDesc = {};
-    constantBufferDesc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-    constantBufferDesc.ByteWidth = sizeof(Matrix);
-    constantBufferDesc.CPUAccessFlags = 0;
-    constantBufferDesc.Usage = D3D11_USAGE_DEFAULT;
+    GraphicsBufferDesc desc = {};
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.ByteWidth = static_cast<int>(arVerts.size()) * Vertex::ByteWidth;
+    desc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
 
-    spConstantBuffer = CreateBuffer(&constantBufferDesc, nullptr, *spDevice);
+    GraphicsBufferData data = {};
+    data.pSysMem = arVerts.data();
+
+    return CreateBuffer(desc, &data);
+}
+
+GraphicsBuffer* Graphics::CreateIndexBuffer(const std::vector<Index>& arIdices)
+{
+    GraphicsBufferDesc desc = {};
+    desc.Usage = D3D11_USAGE_DEFAULT;
+    desc.ByteWidth = static_cast<int>(arIdices.size()) * sizeof(Index);
+    desc.BindFlags = D3D11_BIND_INDEX_BUFFER;
+    desc.CPUAccessFlags = 0;
+    desc.MiscFlags = 0;
+
+    GraphicsBufferData data = {};
+    data.pSysMem = arIdices.data();
+
+    return CreateBuffer(desc, &data);
+}
+
+GraphicsBuffer* Graphics::CreateBuffer(const GraphicsBufferDesc& arDesc, const GraphicsBufferData* apData)
+{
+    ValidateDevice();
+
+    GraphicsBuffer* pbuffer = nullptr;
+    auto hr = pDevice->CreateBuffer(&arDesc, apData, &pbuffer);
+    if (FAILED(hr))
+    {
+        throw new std::runtime_error("CreateBuffer failed");
+    }
+    return pbuffer;
 }

@@ -1,55 +1,35 @@
 #include "ShaderManager.h"
-#include "ShaderLoader.h"
-#include "ShaderKey.h"
+#include "ShaderHelper.h"
+#include <assert.h>
+#include <utility>
 
-namespace
+void ShaderManager::Load(Graphics& arGraphics)
 {
-	struct VShaderLoadInfo
+	if (Map.empty())
 	{
-		VShaderKey Key;
-		VShaderLoadFunc Loader;
-	};
-	struct PShaderLoadInfo
-	{
-		PShaderKey Key;
-		PShaderLoadFunc Loader;
-	};
-
-	// Vertex shaders to load
-	VShaderLoadInfo VLoadData[] =
-	{
-		{VShaderKey::BasicShader, VShaderLoader::LoadBasicShader}
-	};
-
-	// Pixel shaders to load
-	PShaderLoadInfo PLoadData[] =
-	{
-		{PShaderKey::BasicShader, PShaderLoader::LoadBasicShader}
-	};
-}
-
-void ShaderManager::Load(GraphicsDevice& arDevice)
-{
-	for (const auto& rinfo : VLoadData)
-	{
-		auto spshader = rinfo.Loader(arDevice);
-		VsMap.emplace(rinfo.Key, std::move(spshader));
+		Map.emplace(ShaderKey::BasicShader, nullptr);
 	}
-
-	for (const auto& rinfo : PLoadData)
+	
+	for (auto& kvp : Map)
 	{
-		auto spshader = rinfo.Loader(arDevice);
-		PsMap.emplace(rinfo.Key, std::move(spshader));
+		auto spshader = ShaderHelper::MakeShader(kvp.first);
+		spshader->Init(arGraphics);
+		kvp.second = std::move(spshader);
 	}
 }
 
-VShaderInfo& ShaderManager::GetVShader(const VShaderKey aKey)
+void ShaderManager::Shutdown(Graphics& arGraphics)
 {
-	return *(VsMap[aKey]);
+	for (auto& kvp : Map)
+	{
+		auto* pshader = kvp.second.get();
+		pshader->Release();
+	}
 }
 
-PShaderInfo& ShaderManager::GetPShader(const PShaderKey aKey)
+IShader* ShaderManager::GetShader(const ShaderKey aKey)
 {
-	return *(PsMap[aKey]);
+	assert(Map.find(aKey) != Map.end());
+	return Map[aKey].get();
 }
 

@@ -1,8 +1,10 @@
 #pragma once
-#include "Shader.h"
+#include "IShader.h"
 #include "ShaderKey.h"
 #include <memory>
 #include <map>
+
+class Graphics;
 
 class ShaderManager final
 {
@@ -10,10 +12,10 @@ public:
 	ShaderManager() = default;
 	~ShaderManager() = default;
 
-	void Load(GraphicsDevice& arDevice);
+	void Load(Graphics& arGraphics);
+	void Shutdown(Graphics& arGraphics);
 
-	VShaderInfo& GetVShader(const VShaderKey aKey);
-	PShaderInfo& GetPShader(const PShaderKey aKey);
+	IShader* GetShader(const ShaderKey aKey);
 
 private:
 	ShaderManager(ShaderManager&) = delete;
@@ -21,7 +23,6 @@ private:
 	ShaderManager& operator = (ShaderManager&) = delete;
 	ShaderManager& operator = (ShaderManager&&) = delete;
 
-	std::map<VShaderKey, std::unique_ptr<VShaderInfo>> VsMap;
-	std::map<PShaderKey, std::unique_ptr<PShaderInfo>> PsMap;
+	std::map<ShaderKey, std::unique_ptr<IShader>> Map;
 };
 

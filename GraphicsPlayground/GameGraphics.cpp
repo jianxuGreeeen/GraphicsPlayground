@@ -2,7 +2,6 @@
 #include "App.h"
 #include "Graphics.h"
 #include "MathTypes.h"
-#include "ShaderKey.h"
 
 void GameGraphics::Init(App& arApp, Graphics& arGfx)
 {
@@ -12,14 +11,21 @@ void GameGraphics::Init(App& arApp, Graphics& arGfx)
 void GameGraphics::LoadResources(Graphics& arGfx)
 {
 	auto& rdevice = arGfx.GetDevice();
-	spTriangle = Model::CreateTriangle();
-	spTriangle->Init(rdevice);
+	spTriangle = Model::NewTriangle();
+	spTriangle->Init(arGfx);
 
-	spQuad = Model::CreateQuad();
-	spQuad->Init(rdevice);
+	spQuad = Model::NewQuad();
+	spQuad->Init(arGfx);
 
-    spCube = Model::CreateCube();
-    spCube->Init(rdevice);
+    spCube = Model::NewCube();
+    spCube->Init(arGfx);
+}
+
+void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
+{
+    spTriangle.release();
+    spQuad.release();
+    spCube.release();
 }
 
 void GameGraphics::Update(App& arApp, Graphics& arGfx)
@@ -40,10 +46,10 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     arGfx.SetProjectionMatrix(projMatrix);
 
     static float angle1 = 0.0f;
-    angle1 += 0.005f;
+    angle1 += 0.0075f;
 
     static float angle2 = 0.0f;
-    angle2 -= 0.005f;
+    angle2 -= 0.0025f;
 
     using namespace DirectX;
     const auto rotationAxis1 = XMVectorSet(0, 1, 1, 0);

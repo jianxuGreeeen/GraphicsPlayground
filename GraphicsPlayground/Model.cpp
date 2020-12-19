@@ -1,9 +1,8 @@
 #include "Model.h"
-#include <stdexcept>
+#include "Graphics.h"
+#include "Release.h"
 
-ModelId Model::sId = 0;
-
-std::unique_ptr<Model> Model::CreateTriangle()
+std::unique_ptr<Model> Model::NewTriangle()
 {
 	std::vector<Vertex> verts =
 	{
@@ -20,7 +19,7 @@ std::unique_ptr<Model> Model::CreateTriangle()
 	return std::make_unique<Model>(std::move(verts), std::move(indices));
 }
 
-std::unique_ptr<Model> Model::CreateQuad()
+std::unique_ptr<Model> Model::NewQuad()
 {
 	std::vector<Vertex> verts =
 	{
@@ -39,7 +38,7 @@ std::unique_ptr<Model> Model::CreateQuad()
 	return std::make_unique<Model>(std::move(verts), std::move(indices));
 }
 
-std::unique_ptr<Model> Model::CreateCube()
+std::unique_ptr<Model> Model::NewCube()
 {
 	std::vector<Vertex> verts =
 	{
@@ -83,51 +82,27 @@ std::unique_ptr<Model> Model::CreateCube()
 	return std::make_unique<Model>(std::move(verts), std::move(indices));
 }
 
-void Model::Init(GraphicsDevice& arDevice)
+Model::~Model()
 {
-	CreateVertexBuffer(arDevice);
-	CreateIndexBuffer(arDevice);
+	Common::Release<VertexBuffer>(pVBuffer);
+	Common::Release<IndexBuffer>(pIBuffer);
 }
 
-void Model::CreateVertexBuffer(GraphicsDevice& arDevice)
+void Model::Init(Graphics& arGraphics)
 {
-	GraphicsBufferDesc bufferDesc = {};
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = NumVerts() * Vertex::ByteWidth;
-	bufferDesc.BindFlags = D3D11_BIND_VERTEX_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = 0;
-
-	GraphicsBufferData bufferData = {};
-	bufferData.pSysMem = Verts.data();
-
-	spVBuffer = CreateBuffer(bufferDesc, bufferData, arDevice);
+	pVBuffer = arGraphics.CreateVertexBuffer(Verts);
+	pIBuffer = arGraphics.CreateIndexBuffer(Indices);
 }
 
-void Model::CreateIndexBuffer(GraphicsDevice& arDevice)
+void Model::Update(Graphics& arGraphics)
 {
-	GraphicsBufferDesc bufferDesc = {};
-	bufferDesc.Usage = D3D11_USAGE_DEFAULT;
-	bufferDesc.ByteWidth = sizeof(Index) * NumIndices(); //NumTriangles() * Vertex::ByteWidth;
-	bufferDesc.BindFlags = D3D11_BIND_INDEX_BUFFER;
-	bufferDesc.CPUAccessFlags = 0;
-	bufferDesc.MiscFlags = 0;
+	auto& rctx = arGraphics.GetDeviceCtx();
 
-	GraphicsBufferData bufferData = {};
-	bufferData.pSysMem = Indices.data();
-
-	spIBuffer = CreateBuffer(bufferDesc, bufferData, arDevice);
-}
-
-GraphicsBuffer* Model::CreateBuffer(const GraphicsBufferDesc& arDesc, const GraphicsBufferData& arData, GraphicsDevice& arDevice)
-{
-	GraphicsBuffer* pbuffer = nullptr;
-	auto hr = arDevice.CreateBuffer(&arDesc, &arData, &pbuffer);
-	if (FAILED(hr))
-	{
-		throw new std::runtime_error("CreateBuffer failed");
-	}
-	return pbuffer;
+	UINT stride = sizeof(Vertex);
+	UINT offset = 0;
+	rctx.IASetVertexBuffers(0, 1, &pVBuffer, &stride, &offset);
+	rctx.IASetIndexBuffer(pIBuffer, DXGI_FORMAT_R32_UINT, 0);
+	rctx.IASetPrimitiveTopology(D3D11_PRIMITIVE_TOPOLOGY_TRIANGLELIST);
 }
 
 

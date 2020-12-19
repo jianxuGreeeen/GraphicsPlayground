@@ -17,6 +17,7 @@ public:
 
 	void Init(App& arApp, Graphics& arGfx);
 	void Update(App& arApp, Graphics& arGfx);
+	void Shutdown(App& arApp, Graphics& arGfx);
 
 private:
 	GameGraphics(GameGraphics&) = delete;
