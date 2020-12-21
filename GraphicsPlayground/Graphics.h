@@ -24,8 +24,7 @@ public:
 	Graphics() = default;
 	~Graphics() = default;
 
-	void Init();
-	void PrepForWindow(const App& arApp);
+	void Init(const App& arApp);
 	void Update();
 	void Draw();
 	void Shutdown();
@@ -35,6 +34,7 @@ public:
 
 	void SetProjectionMatrix(const Matrix& arProjMatrix) { ProjectionMatrix = arProjMatrix; }
 	void SetViewMatrix(const Matrix& arViewMatrix) { ViewMatrix = arViewMatrix; }
+	void SetRenderState(const RasterizerStates aState) { RasterizerState = aState; }
 
 	// Caller must manage the memory and call release when it's done
 	GraphicsBuffer* CreateVertexBuffer(const std::vector<Vertex>& arVerts);
@@ -62,7 +62,7 @@ private:
 	std::array< GraphicsRasterizerState*, static_cast<size_t>(RasterizerStates::Count)> pRasterizerStates;
 
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
-	RasterizerStates RasterizerState = RasterizerStates::WireFrame;
+	RasterizerStates RasterizerState = RasterizerStates::Default;
 	ShaderManager ShaderMgr;
 
 	GraphicsViewPort ViewPort;

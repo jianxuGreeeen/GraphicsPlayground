@@ -18,15 +18,11 @@ namespace
     constexpr int NumFeatureLevels = 5;
 }
 
-void Graphics::Init()
+void Graphics::Init(const App& arApp)
 {
     InitFactory();
     InitAdapter();
     InitDevice();
-}
-
-void Graphics::PrepForWindow(const App& arApp)
-{
     InitSwapChain(arApp);
     InitRenderTargets();
     InitDepthStencil(arApp);

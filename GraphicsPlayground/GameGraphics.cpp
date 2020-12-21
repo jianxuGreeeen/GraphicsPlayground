@@ -19,6 +19,11 @@ void GameGraphics::LoadResources(Graphics& arGfx)
 
     spCube = Model::NewCube();
     spCube->Init(arGfx);
+
+    spSphere = Model::NewSphere(3);
+    spSphere->Init(arGfx);
+
+    arGfx.SetRenderState(RasterizerStates::WireFrame);
 }
 
 void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
@@ -63,5 +68,5 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     worldInstance2.WorldMatrix = worldMatrix2;
 
 	arGfx.AddItemToDraw(spCube.get(), worldInstance1);
-    arGfx.AddItemToDraw(spCube.get(), worldInstance2);
+    arGfx.AddItemToDraw(spSphere.get(), worldInstance2);
 }

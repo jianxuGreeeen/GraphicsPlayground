@@ -6,7 +6,7 @@ class App final
 {
 public:
 
-	void Init(HINSTANCE ahInstance, int anCmdShow);
+	void Init(HINSTANCE ahInstance);
 	void MakeWindow(const WindowSettings& arSettings);
 	bool Update();
 
@@ -17,7 +17,6 @@ public:
 
 private:
 	HINSTANCE hInst;
-	int nCmdShow;
 	HWND hWnd;
 
 	static const int MaxStringC = 100;

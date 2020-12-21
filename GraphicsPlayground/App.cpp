@@ -4,10 +4,9 @@
 LRESULT CALLBACK    WndProc(HWND, UINT, WPARAM, LPARAM);
 
 // TODO error handling
-void App::Init(HINSTANCE ahInstance, int anCmdShow)
+void App::Init(HINSTANCE ahInstance)
 {
     hInst = ahInstance;
-    nCmdShow = anCmdShow;
 
     LoadStringW(ahInstance, IDS_APP_TITLE, szTitle, MaxStringC);
     LoadStringW(ahInstance, IDC_GRAPHICSPLAYGROUND, szWindowClass, MaxStringC);
@@ -45,7 +44,7 @@ void App::MakeWindow(const WindowSettings& arSettings)
 
     if (hWndLocal)
     {
-        ShowWindow(hWndLocal, nCmdShow);
+        ShowWindow(hWndLocal, SW_SHOW);
         UpdateWindow(hWndLocal);
         hWnd = hWndLocal;
     }

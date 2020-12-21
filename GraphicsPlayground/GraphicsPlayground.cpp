@@ -31,15 +31,14 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
     auto wndSettings = LoadSettings();
 
     App app;
-    app.Init(hInstance, nCmdShow);
+    app.Init(hInstance);
     app.MakeWindow(wndSettings);
 
     Graphics gfx;
     GameGraphics gameGfx;
     try
     {
-        gfx.Init();
-        gfx.PrepForWindow(app);
+        gfx.Init(app);
         gfx.LoadResources();
 
         gameGfx.Init(app, gfx);
