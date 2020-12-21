@@ -2,6 +2,7 @@
 #include "MathTypes.h"
 
 class Graphics;
+class Texture;
 
 /*
 * To make a new shader:
@@ -15,6 +16,6 @@ class IShader
 public:
 	virtual void Init(Graphics& arGraphics) = 0;
 	virtual void Update(Graphics& arGraphics) = 0;
-	virtual void UpdateCBuffers(Graphics& arGraphics, const Matrix& arWorldMatrix ) = 0;
+	virtual void UpdateCBuffers(Graphics& arGraphics, const Matrix& arWorldMatrix, Texture* apTexture) = 0;
 	virtual void Release() = 0;
 };

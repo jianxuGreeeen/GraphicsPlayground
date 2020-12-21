@@ -7,8 +7,8 @@ struct Camera
 	static constexpr float DefaultNear = 0.1f;
 	static constexpr float DefaultFar = 1000.0f;
 
-	Vector EyePos;
-	Vector FocusPos;
+	Vector EyePos = { 0.0f, 0.0f, 0.0f };
+	Vector FocusPos = { 0.0f, 0.0f, 1.0f };
 	float Fov = DefaultFov;
 	float Near = DefaultNear;
 	float Far = DefaultFar;

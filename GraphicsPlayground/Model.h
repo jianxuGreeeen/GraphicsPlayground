@@ -28,7 +28,7 @@ public:
 	static std::unique_ptr<Model> NewTriangle();
 	static std::unique_ptr<Model> NewQuad();
 	static std::unique_ptr<Model> NewCube();
-	static std::unique_ptr<Model> NewSphere(size_t aSubDivision = 1);
+	static std::unique_ptr<Model> NewSphere(int aSubDivision = 15);
 
 private:
 

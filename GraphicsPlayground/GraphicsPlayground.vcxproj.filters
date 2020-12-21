@@ -16,6 +16,9 @@
     <Filter Include="Shader">
       <UniqueIdentifier>{dd0b89d5-e0cb-47e8-8317-e5d2d025a0af}</UniqueIdentifier>
     </Filter>
+    <Filter Include="Resource Files\Textures">
+      <UniqueIdentifier>{0ffe693f-0918-469e-8739-a0990207d1bf}</UniqueIdentifier>
+    </Filter>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="framework.h">
@@ -84,6 +87,9 @@
     <ClInclude Include="GraphicsRasterizerStates.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Texture.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsPlayground.cpp">
@@ -110,6 +116,9 @@
     <ClCompile Include="ShaderManager.cpp">
       <Filter>Shader</Filter>
     </ClCompile>
+    <ClCompile Include="Texture.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="GraphicsPlayground.rc">
@@ -122,6 +131,12 @@
     </Image>
     <Image Include="GraphicsPlayground.ico">
       <Filter>Resource Files</Filter>
+    </Image>
+    <Image Include="Textures\braynzar.jpg">
+      <Filter>Resource Files\Textures</Filter>
+    </Image>
+    <Image Include="Textures\earth.jpg">
+      <Filter>Resource Files\Textures</Filter>
     </Image>
   </ItemGroup>
   <ItemGroup>

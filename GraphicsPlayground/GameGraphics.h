@@ -1,6 +1,8 @@
 #pragma once
 #include "Camera.h"
 #include "Model.h"
+#include "Texture.h"
+#include "ShaderManager.h"
 #include <memory>
 
 class App;
@@ -30,8 +32,12 @@ private:
 	std::unique_ptr<Model> spCube;
 	std::unique_ptr<Model> spSphere;
 
+	std::unique_ptr<Texture> spbraynzar;
+	std::unique_ptr<Texture> spEarth;
+
 	void LoadResources(Graphics& arGfx);
 
 	Camera Cam;
+	ShaderManager ShaderMgr;
 };
 

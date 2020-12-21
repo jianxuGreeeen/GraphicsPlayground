@@ -42,7 +42,7 @@ namespace ShaderHelper
 
 		if (spshader == nullptr)
 		{
-			throw std::runtime_error("MakeBasicShader failed to make a new shader");
+			throw std::runtime_error("MakeShader failed to make a new shader");
 		}
 		return spshader;
 	}

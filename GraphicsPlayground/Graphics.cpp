@@ -1,5 +1,6 @@
 #include "Graphics.h"
 #include "App.h"
+#include "IShader.h"
 #include "Release.h"
 
 #include <stdexcept>
@@ -38,16 +39,10 @@ void Graphics::Init(const App& arApp)
     ViewPort.MaxDepth = 1.0f;
 }
 
-void Graphics::LoadResources()
+void Graphics::AddItemToDraw(const GraphicsDrawState& arDrawState, const ModelInstance& arInstanceData)
 {
     ValidateDevice();
-    ShaderMgr.Load(*this);
-}
-
-void Graphics::AddItemToDraw(Model* const apModel, const ModelInstance& arInstanceData)
-{
-    ValidateDevice();
-    ItemsToDraw[apModel].push_back(arInstanceData);
+    ItemsToDraw[arDrawState].push_back(arInstanceData);
 }
 
 void Graphics::Update()
@@ -60,23 +55,23 @@ void Graphics::Draw()
     BeginFrame();    
 
     // TODO : allow models to select shader to use
-    auto* pshader = ShaderMgr.GetShader(ShaderKey::BasicShader);
-    if (pshader != nullptr)
+    for (auto& kvp : ItemsToDraw)
     {
+        auto& rdrawState = kvp.first;
+        auto* pshader = rdrawState.pShader;
+        auto rasterizeState = rdrawState.RasterizerState;
+        pDeviceCtx->RSSetState(pRasterizerStates[static_cast<int>(rasterizeState)]);
         pshader->Update(*this);
 
-        for (auto& kvp : ItemsToDraw)
-        {
-            auto* pmodel = kvp.first;
-            pmodel->Update(*this);           
+        auto* pmodel = rdrawState.pModel;
+        pmodel->Update(*this);
 
-            auto& instances = kvp.second;
-            for (auto& rinstance : instances)
-            {
-                const auto wvp = rinstance.WorldMatrix * ViewMatrix * ProjectionMatrix;
-                pshader->UpdateCBuffers(*this, wvp);
-                pDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
-            }
+        auto& instances = kvp.second;
+        for (auto& rinstance : instances)
+        {
+            const auto wvp = rinstance.WorldMatrix * ViewMatrix * ProjectionMatrix;
+            pshader->UpdateCBuffers(*this, wvp, rinstance.pTexture);
+            pDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
         }
     }
 
@@ -86,8 +81,6 @@ void Graphics::Draw()
 
 void Graphics::Shutdown()
 {
-    ShaderMgr.Shutdown(*this);
-
     for (auto*& prasterizerState : pRasterizerStates)
     {
         Common::Release<GraphicsRasterizerState>(prasterizerState);
@@ -299,9 +292,7 @@ void Graphics::BeginFrame()
     pDeviceCtx->ClearRenderTargetView(pRenderTarget, clearColor);
     pDeviceCtx->OMSetRenderTargets(1, &pRenderTarget, pDepthStencil);
     pDeviceCtx->ClearDepthStencilView(pDepthStencil, D3D11_CLEAR_DEPTH | D3D11_CLEAR_STENCIL, 1.0f, 0);
-    pDeviceCtx->RSSetState(pRasterizerStates[static_cast<int>(RasterizerState)]);
     pDeviceCtx->RSSetViewports(1, &ViewPort);
-
 }
 
 void Graphics::EndFrame()

@@ -3,6 +3,7 @@
 #include "Release.h"
 #include "ShaderHelper.h"
 #include "ShaderNames.h"
+#include "Texture.h"
 
 #include <stdexcept>
 
@@ -17,7 +18,8 @@ namespace
 	ShaderLayout Layout[] =
 	{
 		{"POSITION", 0, DXGI_FORMAT_R32G32B32_FLOAT, 0, 0, D3D11_INPUT_PER_VERTEX_DATA, 0},
-		{"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0}
+		{"COLOR",    0, DXGI_FORMAT_R32G32B32A32_FLOAT, 0, 12, D3D11_INPUT_PER_VERTEX_DATA, 0},
+		{"TEXCOORD", 0, DXGI_FORMAT_R32G32_FLOAT, 0, 28, D3D11_INPUT_PER_VERTEX_DATA, 0}
 	};
 }
 
@@ -79,12 +81,26 @@ void BasicShader::Update(Graphics& arGraphics)
 	rctx.VSSetConstantBuffers(0, 1, &pVCBuffer);
 }
 
-void BasicShader::UpdateCBuffers(Graphics& arGraphics, const Matrix& arWVPMatrix)
+void BasicShader::UpdateCBuffers(Graphics& arGraphics, const Matrix& arWVPMatrix, Texture* apTexture)
 {
 	auto& rctx = arGraphics.GetDeviceCtx();
 
 	const auto transposedWvp = XMMatrixTranspose(arWVPMatrix);
 	rctx.UpdateSubresource(pVCBuffer, 0, nullptr, &transposedWvp, 0, 0);
+
+	if (apTexture != nullptr)
+	{
+		auto* ptextureView = apTexture->GetTextureView();
+		auto* psampler = apTexture->GetSamplerState();
+
+		rctx.PSSetShaderResources(0, 1, &ptextureView);
+		rctx.PSSetSamplers(0, 1, &psampler);
+	}
+	else
+	{
+		ShaderResourceView* nullSRV[1] = { nullptr };
+		rctx.PSSetShaderResources(0, 1, nullSRV);
+	}
 }
 
 void BasicShader::Release()

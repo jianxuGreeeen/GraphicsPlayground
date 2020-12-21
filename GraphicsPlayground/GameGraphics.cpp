@@ -10,6 +10,8 @@ void GameGraphics::Init(App& arApp, Graphics& arGfx)
 
 void GameGraphics::LoadResources(Graphics& arGfx)
 {
+    ShaderMgr.Load(arGfx);
+
 	auto& rdevice = arGfx.GetDevice();
 	spTriangle = Model::NewTriangle();
 	spTriangle->Init(arGfx);
@@ -20,17 +22,25 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spCube = Model::NewCube();
     spCube->Init(arGfx);
 
-    spSphere = Model::NewSphere(3);
+    spSphere = Model::NewSphere(30);
     spSphere->Init(arGfx);
 
-    arGfx.SetRenderState(RasterizerStates::WireFrame);
+    spbraynzar = std::make_unique<Texture>();
+    spbraynzar->Init(arGfx, L"Textures/braynzar.jpg");
+
+    spEarth = std::make_unique<Texture>();
+    spEarth->Init(arGfx, L"Textures/earth.jpg");
 }
 
 void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
 {
+    spbraynzar.release();
+    spEarth.release();
     spTriangle.release();
     spQuad.release();
     spCube.release();
+
+    ShaderMgr.Shutdown(arGfx);
 }
 
 void GameGraphics::Update(App& arApp, Graphics& arGfx)
@@ -54,19 +64,28 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     angle1 += 0.0075f;
 
     static float angle2 = 0.0f;
-    angle2 -= 0.0025f;
+    angle2 -= 0.005f;
 
     using namespace DirectX;
     const auto rotationAxis1 = XMVectorSet(0, 1, 1, 0);
-    const auto rotationAxis2 = XMVectorSet(1, 1, 0, 0);
+    const auto rotationAxis2 = XMVectorSet(0, 1, 0, 0);
     const auto worldMatrix1 = XMMatrixRotationAxis(rotationAxis1, XMConvertToRadians(angle1)) * XMMatrixTranslation(1.0f, 0.0f, 3.0f);
     const auto worldMatrix2 = XMMatrixRotationAxis(rotationAxis2, XMConvertToRadians(angle2)) * XMMatrixTranslation(-1.0f, 0.0f, 3.0f);
 
     ModelInstance worldInstance1{};
     ModelInstance worldInstance2{};
     worldInstance1.WorldMatrix = worldMatrix1;
+    worldInstance1.pTexture = spbraynzar.get();
     worldInstance2.WorldMatrix = worldMatrix2;
+    worldInstance2.pTexture = spEarth.get();
 
-	arGfx.AddItemToDraw(spCube.get(), worldInstance1);
-    arGfx.AddItemToDraw(spSphere.get(), worldInstance2);
+    GraphicsDrawState drawState;
+    drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
+    drawState.RasterizerState = RasterizerStates::Default;
+    drawState.pModel = spCube.get();
+	arGfx.AddItemToDraw(drawState, worldInstance1);
+
+    drawState.pModel = spSphere.get();
+    drawState.RasterizerState = RasterizerStates::WireFrame;
+    arGfx.AddItemToDraw(drawState, worldInstance2);
 }

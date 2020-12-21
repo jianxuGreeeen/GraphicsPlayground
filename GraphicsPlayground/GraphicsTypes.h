@@ -24,8 +24,10 @@ using PixelShader = ID3D11PixelShader;
 using RenderTarget = ID3D11RenderTargetView;
 using ShaderInputLayout = ID3D11InputLayout;
 using ShaderLayout = D3D11_INPUT_ELEMENT_DESC;
+using ShaderResourceView = ID3D11ShaderResourceView;
 using SwapChain = IDXGISwapChain;
 using SwapChainBuffer = ID3D11Texture2D;
+using TexSamplerState = ID3D11SamplerState;
 using VertexShader = ID3D11VertexShader;
 using VertexBuffer = ID3D11Buffer;
 

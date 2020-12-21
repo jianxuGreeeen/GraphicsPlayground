@@ -3,16 +3,32 @@
 #include "GraphicsTypes.h"
 #include "Model.h"
 #include "GraphicsRasterizerStates.h"
-#include "ShaderManager.h"
 #include <array>
 #include <map>
 
 class App;
+class Texture;
+class IShader;
 
 struct ModelInstance
 {
-	//TODO: Add instance data here
+	//Add instance data here
 	Matrix WorldMatrix;
+	Texture* pTexture = nullptr;
+};
+
+struct GraphicsDrawState
+{
+	Model* pModel = nullptr;
+	IShader* pShader = nullptr;
+	RasterizerStates RasterizerState = RasterizerStates::Default;
+
+	bool operator < (const GraphicsDrawState& arOther) const
+	{
+		return pShader < arOther.pShader ||
+			pModel < arOther.pModel ||
+			static_cast<int>(RasterizerState) < static_cast<int>(arOther.RasterizerState);
+	}
 };
 
 /*
@@ -29,13 +45,11 @@ public:
 	void Draw();
 	void Shutdown();
 
-	void LoadResources();
-	void AddItemToDraw(Model* const apModel, const ModelInstance& arInstanceData);
+	void AddItemToDraw(const GraphicsDrawState& arDrawState, const ModelInstance& arInstanceData);
 
 	void SetProjectionMatrix(const Matrix& arProjMatrix) { ProjectionMatrix = arProjMatrix; }
 	void SetViewMatrix(const Matrix& arViewMatrix) { ViewMatrix = arViewMatrix; }
-	void SetRenderState(const RasterizerStates aState) { RasterizerState = aState; }
-
+	
 	// Caller must manage the memory and call release when it's done
 	GraphicsBuffer* CreateVertexBuffer(const std::vector<Vertex>& arVerts);
 	GraphicsBuffer* CreateIndexBuffer(const std::vector<Index>& arIdices);
@@ -43,7 +57,6 @@ public:
 
 	GraphicsDevice& GetDevice() { return *pDevice; }
 	GraphicsDeviceContext& GetDeviceCtx() { return *pDeviceCtx; }
-	ShaderManager& GetShaderMgr() { return ShaderMgr; }
 
 private:
 	Graphics(Graphics&) = delete;
@@ -62,14 +75,12 @@ private:
 	std::array< GraphicsRasterizerState*, static_cast<size_t>(RasterizerStates::Count)> pRasterizerStates;
 
 	D3D_FEATURE_LEVEL FeatureLevel = D3D_FEATURE_LEVEL_11_0;
-	RasterizerStates RasterizerState = RasterizerStates::Default;
-	ShaderManager ShaderMgr;
 
 	GraphicsViewPort ViewPort;
 	Matrix ProjectionMatrix;
 	Matrix ViewMatrix;
 
-	std::map<Model* const, std::vector<ModelInstance>> ItemsToDraw;
+	std::map<GraphicsDrawState, std::vector<ModelInstance>> ItemsToDraw;
 
 	void InitAdapter();
 	void InitFactory();
