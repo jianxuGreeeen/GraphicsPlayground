@@ -28,13 +28,13 @@ namespace ShaderHelper
 		return pshader;
 	}
 		
-	std::unique_ptr<IShader> MakeShader(ShaderKey aKey)
+	IShader* MakeShader(ShaderKey aKey)
 	{
-		std::unique_ptr<IShader> spshader = nullptr;
+		IShader* spshader = nullptr;
 		switch (aKey)
 		{
 		case ShaderKey::BasicShader:
-			spshader = std::make_unique<BasicShader>();
+			spshader = new BasicShader();
 			break;
 		default:
 			break;

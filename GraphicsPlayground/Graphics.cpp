@@ -1,6 +1,7 @@
 #include "Graphics.h"
 #include "App.h"
 #include "IShader.h"
+#include "Light.h"
 #include "Release.h"
 
 #include <stdexcept>
@@ -17,6 +18,11 @@ namespace
         D3D_FEATURE_LEVEL_9_1
     };
     constexpr int NumFeatureLevels = 5;
+
+    const DirectionalLight DirLight = {
+        ColorS::Red, 
+        Float3(1.0f, -1.0f, 0.0f)
+    };
 }
 
 void Graphics::Init(const App& arApp)
@@ -54,6 +60,8 @@ void Graphics::Draw()
 {
     BeginFrame();    
 
+    using namespace DirectX;
+
     // TODO : allow models to select shader to use
     for (auto& kvp : ItemsToDraw)
     {
@@ -66,11 +74,25 @@ void Graphics::Draw()
         auto* pmodel = rdrawState.pModel;
         pmodel->Update(*this);
 
+        // per frame data
+        pshader->UpdateCBuffers(*this, ShaderBufferConstants::DirLight, &DirLight);
+
         auto& instances = kvp.second;
         for (auto& rinstance : instances)
         {
             const auto wvp = rinstance.WorldMatrix * ViewMatrix * ProjectionMatrix;
-            pshader->UpdateCBuffers(*this, wvp, rinstance.pTexture);
+            const auto transposedWvp = XMMatrixTranspose(wvp);
+            const auto world = XMMatrixTranspose(rinstance.WorldMatrix);
+
+            // per object data
+            pshader->UpdateCBuffers(*this, ShaderBufferConstants::WVP, &transposedWvp);
+            pshader->UpdateCBuffers(*this, ShaderBufferConstants::World, &world);
+
+            //commit to gpu
+            pshader->CommitCBufferData(*this);
+
+            pshader->UpdateTexture(*this, TextureKey::ModelTex1, rinstance.pTexture);
+            
             pDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
         }
     }

@@ -22,20 +22,13 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spCube = Model::NewCube();
     spCube->Init(arGfx);
 
-    spSphere = Model::NewSphere(30);
-    spSphere->Init(arGfx);
-
     spbraynzar = std::make_unique<Texture>();
     spbraynzar->Init(arGfx, L"Textures/braynzar.jpg");
-
-    spEarth = std::make_unique<Texture>();
-    spEarth->Init(arGfx, L"Textures/earth.jpg");
 }
 
 void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
 {
     spbraynzar.release();
-    spEarth.release();
     spTriangle.release();
     spQuad.release();
     spCube.release();
@@ -69,15 +62,15 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     using namespace DirectX;
     const auto rotationAxis1 = XMVectorSet(0, 1, 1, 0);
     const auto rotationAxis2 = XMVectorSet(0, 1, 0, 0);
-    const auto worldMatrix1 = XMMatrixRotationAxis(rotationAxis1, XMConvertToRadians(angle1)) * XMMatrixTranslation(1.0f, 0.0f, 3.0f);
-    const auto worldMatrix2 = XMMatrixRotationAxis(rotationAxis2, XMConvertToRadians(angle2)) * XMMatrixTranslation(-1.0f, 0.0f, 3.0f);
+    const auto worldMatrix1 = XMMatrixRotationAxis(rotationAxis1, XMConvertToRadians(angle1)) * XMMatrixTranslation(1.0f, 0.0f, 2.75f);
+    const auto worldMatrix2 = XMMatrixRotationAxis(rotationAxis2, XMConvertToRadians(angle2)) * XMMatrixTranslation(-1.0f, 0.0f, 2.75f);
 
     ModelInstance worldInstance1{};
     ModelInstance worldInstance2{};
     worldInstance1.WorldMatrix = worldMatrix1;
     worldInstance1.pTexture = spbraynzar.get();
     worldInstance2.WorldMatrix = worldMatrix2;
-    worldInstance2.pTexture = spEarth.get();
+    worldInstance2.pTexture = spbraynzar.get();
 
     GraphicsDrawState drawState;
     drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
@@ -85,7 +78,6 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     drawState.pModel = spCube.get();
 	arGfx.AddItemToDraw(drawState, worldInstance1);
 
-    drawState.pModel = spSphere.get();
-    drawState.RasterizerState = RasterizerStates::WireFrame;
+    drawState.RasterizerState = RasterizerStates::Default;//WireFrame;
     arGfx.AddItemToDraw(drawState, worldInstance2);
 }

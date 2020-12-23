@@ -3,27 +3,20 @@
 
 struct Vertex
 {
-	Vertex(const Float3& arPos, const Color4& arColor, const Float2& arUV)
+	Vertex(const Float3& arPos = Float3S::Zero
+		, const Color4& arColor = ColorS::Black
+		, const Float2& arUV = Float2S::Zero
+		, const Float3& arNormal = Float3S::Forward)
 		: Pos(arPos)
 		, Color(arColor)
 		, UV(arUV)
-	{};
-
-	Vertex() 
-		: Vertex(Float3(0.0f, 0.0f, 0.0f), Color4(0.0f, 0.0f, 0.0f, 1.0f), Float2(0.0f, 0.0f))
-	{}
-
-	Vertex(const Float3& arPos, const Color4& arColor)
-		: Vertex(arPos, arColor, Float2(0.0f, 0.0f))
-	{};
-
-	explicit Vertex(const Float3& arPos)
-		: Vertex(arPos, Color4(0.0f, 0.0f, 0.0f, 1.0f), Float2(0.0f, 0.0f))
+		, Normal(arNormal)
 	{};
 
 	Float3 Pos;
 	Color4 Color;
 	Float2 UV;
+	Float3 Normal;
 
-	static const int ByteWidth = 9*sizeof(float);
+	static const int ByteWidth = 12*sizeof(float);
 };

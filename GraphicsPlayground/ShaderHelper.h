@@ -10,7 +10,7 @@ namespace ShaderHelper
 {
 	CompiledShaderObject* CreateCompiledShaderObject(const ShaderName& arFileName);
 
-	std::unique_ptr<IShader> MakeShader(ShaderKey aKey);
+	IShader* MakeShader(ShaderKey aKey);
 };
 
 

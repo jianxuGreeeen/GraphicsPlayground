@@ -59,8 +59,17 @@ int APIENTRY wWinMain(_In_ HINSTANCE hInstance,
         std::cout << e.what() << std::endl;
     }
 
-    gameGfx.Shutdown(app, gfx);
-    gfx.Shutdown();
+    try
+    {
+        gameGfx.Shutdown(app, gfx);
+        gfx.Shutdown();
+    }
+    catch (std::exception& e)
+    {
+        // TODO: handle me
+        std::cout << e.what() << std::endl;
+    }
+    
     return 0;
 }
 

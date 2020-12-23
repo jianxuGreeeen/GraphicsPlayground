@@ -30,10 +30,8 @@ private:
 	std::unique_ptr<Model> spTriangle;
 	std::unique_ptr<Model> spQuad;
 	std::unique_ptr<Model> spCube;
-	std::unique_ptr<Model> spSphere;
 
 	std::unique_ptr<Texture> spbraynzar;
-	std::unique_ptr<Texture> spEarth;
 
 	void LoadResources(Graphics& arGfx);
 

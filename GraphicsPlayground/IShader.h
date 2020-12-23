@@ -1,5 +1,7 @@
 #pragma once
 #include "MathTypes.h"
+#include "ShaderBufferConstants.h"
+#include "TextureKey.h"
 
 class Graphics;
 class Texture;
@@ -16,6 +18,8 @@ class IShader
 public:
 	virtual void Init(Graphics& arGraphics) = 0;
 	virtual void Update(Graphics& arGraphics) = 0;
-	virtual void UpdateCBuffers(Graphics& arGraphics, const Matrix& arWorldMatrix, Texture* apTexture) = 0;
+	virtual void UpdateCBuffers(Graphics& arGraphics, const ShaderBufferConstants arKey, const void* apData) = 0;
+	virtual void CommitCBufferData(Graphics& arGraphics) = 0;
+	virtual void UpdateTexture(Graphics& arGraphics, const TextureKey arKey, Texture* const apData) = 0;
 	virtual void Release() = 0;
 };

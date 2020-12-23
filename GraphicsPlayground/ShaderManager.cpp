@@ -14,7 +14,7 @@ void ShaderManager::Load(Graphics& arGraphics)
 	{
 		auto spshader = ShaderHelper::MakeShader(kvp.first);
 		spshader->Init(arGraphics);
-		kvp.second = std::move(spshader);
+		kvp.second.reset(spshader);
 	}
 }
 
@@ -24,6 +24,7 @@ void ShaderManager::Shutdown(Graphics& arGraphics)
 	{
 		auto* pshader = kvp.second.get();
 		pshader->Release();
+		kvp.second.release();
 	}
 }
 

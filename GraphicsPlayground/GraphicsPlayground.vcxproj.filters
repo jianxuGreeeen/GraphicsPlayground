@@ -90,6 +90,15 @@
     <ClInclude Include="Texture.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Light.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ShaderBufferConstants.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
+    <ClInclude Include="TextureKey.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsPlayground.cpp">
@@ -133,9 +142,6 @@
       <Filter>Resource Files</Filter>
     </Image>
     <Image Include="Textures\braynzar.jpg">
-      <Filter>Resource Files\Textures</Filter>
-    </Image>
-    <Image Include="Textures\earth.jpg">
       <Filter>Resource Files\Textures</Filter>
     </Image>
   </ItemGroup>
