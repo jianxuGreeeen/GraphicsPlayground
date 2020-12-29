@@ -47,7 +47,7 @@ public:
 	void Shutdown();
 
 	void AddItemToDraw(const GraphicsDrawState& arDrawState, const ModelInstance& arInstanceData);
-	void AddPointLights(const PointLight& arInstance);
+	void AddPointLight(const PointLight& arInstance);
 
 	void SetProjectionMatrix(const Matrix& arProjMatrix) { ProjectionMatrix = arProjMatrix; }
 	void SetViewMatrix(const Matrix& arViewMatrix) { ViewMatrix = arViewMatrix; }
@@ -83,7 +83,7 @@ private:
 	Matrix ViewMatrix;
 
 	std::map<GraphicsDrawState, std::vector<ModelInstance>> ItemsToDraw;
-	PointLight PointLights;
+	PointLight PointLight1;
 
 	void InitAdapter();
 	void InitFactory();

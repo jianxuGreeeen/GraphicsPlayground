@@ -28,15 +28,3 @@ struct PointLight
 	Float4 Pos = { 0.0f, 0.0f, 1.0f, 1.0f }; // Range is the w component
 	Float3 Attenuation = { 1.0f, 1.0f, 1.0f };
 };
-
-struct LightBufferData
-{
-	DirectionalLight DirLight = {
-		Color4(.2f, .2f, .2f, 1.0f),
-		Float3(1.0f, -1.0f, 0.0f)
-	};
-	float pad1 = 0.0f;
-
-	PointLight PtLight1;
-	float pad2 = 0.0f;
-};

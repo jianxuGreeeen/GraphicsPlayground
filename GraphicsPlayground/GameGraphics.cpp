@@ -86,5 +86,5 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     drawState.RasterizerState = RasterizerStates::Default;//WireFrame;
     arGfx.AddItemToDraw(drawState, worldInstance2);
 
-    arGfx.AddPointLights(*spLight1);
+    arGfx.AddPointLight(*spLight1);
 }

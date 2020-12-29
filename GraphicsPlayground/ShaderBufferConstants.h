@@ -4,6 +4,7 @@ enum class ShaderBufferConstants
 {
 	WVP,
 	World,
-	DirLight
+	DirLight,
+	PointLight,
 };
 

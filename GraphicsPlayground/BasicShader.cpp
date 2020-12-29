@@ -38,7 +38,7 @@ void BasicShader::InitPixelShader(Graphics& arGraphics)
 
 	GraphicsBufferDesc desc = {};
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(LightBufferData);
+	desc.ByteWidth = sizeof(PShaderCBuffer);
 	desc.CPUAccessFlags = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
@@ -122,12 +122,17 @@ void BasicShader::UpdateCBuffers(Graphics& arGraphics, const ShaderBufferConstan
 	else if (arKey == ShaderBufferConstants::DirLight)
 	{
 		using namespace DirectX;
-		const LightBufferData& rlight = *(static_cast<const LightBufferData*>(apData));
-		PcBufferData.DirLight.Color = rlight.DirLight.Color;
-		PcBufferData.DirLight.Dir = rlight.DirLight.Dir;
-		PcBufferData.PtLight1.Pos = rlight.PtLight1.Pos;
-		PcBufferData.PtLight1.Color = rlight.PtLight1.Color;
-		PcBufferData.PtLight1.Attenuation = rlight.PtLight1.Attenuation;
+		const DirectionalLight& rlight = *(static_cast<const DirectionalLight*>(apData));
+		PcBufferData.DirLight.Color = rlight.Color;
+		PcBufferData.DirLight.Dir = rlight.Dir;
+	}
+	else if (arKey == ShaderBufferConstants::PointLight)
+	{
+		using namespace DirectX;
+		const PointLight& rlight = *(static_cast<const PointLight*>(apData));
+		PcBufferData.PtLight1.Pos = rlight.Pos;
+		PcBufferData.PtLight1.Color = rlight.Color;
+		PcBufferData.PtLight1.Attenuation = rlight.Attenuation;
 	}
 }
 
