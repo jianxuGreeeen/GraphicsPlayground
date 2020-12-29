@@ -34,6 +34,9 @@ private:
 	std::unique_ptr<PointLight> spLight1;
 
 	std::unique_ptr<Texture> spbraynzar;
+	std::unique_ptr<Texture> spGoldAlbedo;
+	std::unique_ptr<Texture> spGoldNormal;
+	std::unique_ptr<Texture> spGoldRoughness;
 
 	void LoadResources(Graphics& arGfx);
 

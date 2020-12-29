@@ -4,6 +4,7 @@
 #include "Light.h"
 #include "Model.h"
 #include "GraphicsRasterizerStates.h"
+#include "TextureKey.h"
 #include <array>
 #include <map>
 
@@ -15,7 +16,7 @@ struct ModelInstance
 {
 	//Add instance data here
 	Matrix WorldMatrix;
-	Texture* pTexture = nullptr;
+	std::map<TextureKey, Texture*> pTextures;
 };
 
 struct GraphicsDrawState

@@ -103,7 +103,10 @@ void Graphics::Draw()
             //commit to gpu
             pshader->CommitCBufferData(*this);
 
-            pshader->UpdateTexture(*this, TextureKey::ModelTex1, rinstance.pTexture);
+            for (auto& rtextures : rinstance.pTextures)
+            {
+                pshader->UpdateTexture(*this, rtextures.first, rtextures.second);
+            }
             
             pDeviceCtx->DrawIndexed(pmodel->NumIndices(), 0, 0);
         }

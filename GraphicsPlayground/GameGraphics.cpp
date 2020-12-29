@@ -25,6 +25,15 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spbraynzar = std::make_unique<Texture>();
     spbraynzar->Init(arGfx, L"Textures/braynzar.jpg");
 
+    spGoldAlbedo = std::make_unique<Texture>();
+    spGoldAlbedo->Init(arGfx, L"Textures/Gold_Albedo.png");
+
+    spGoldNormal = std::make_unique<Texture>();
+    spGoldNormal->Init(arGfx, L"Textures/Gold_Normal.png");
+
+    spGoldRoughness = std::make_unique<Texture>();
+    spGoldRoughness->Init(arGfx, L"Textures/Gold_Roughness.png");
+
     spLight1 = std::make_unique<PointLight>();
     spLight1->Pos = { 0.0f, -1.0f, 3.25f, 10.0f };
     spLight1->Color = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -33,6 +42,11 @@ void GameGraphics::LoadResources(Graphics& arGfx)
 
 void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
 {
+    spLight1.release();
+
+    spGoldRoughness.release();
+    spGoldNormal.release();
+    spGoldAlbedo.release();
     spbraynzar.release();
     spTriangle.release();
     spQuad.release();
@@ -73,9 +87,9 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     ModelInstance worldInstance1{};
     ModelInstance worldInstance2{};
     worldInstance1.WorldMatrix = worldMatrix1;
-    worldInstance1.pTexture = spbraynzar.get();
+    worldInstance1.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
     worldInstance2.WorldMatrix = worldMatrix2;
-    worldInstance2.pTexture = spbraynzar.get();
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
 
     GraphicsDrawState drawState;
     drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
