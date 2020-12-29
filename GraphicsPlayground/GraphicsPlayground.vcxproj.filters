@@ -99,6 +99,9 @@
     <ClInclude Include="TextureKey.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="PbrShader.h">
+      <Filter>Shader</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="GraphicsPlayground.cpp">
@@ -127,6 +130,9 @@
     </ClCompile>
     <ClCompile Include="Texture.cpp">
       <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="PbrShader.cpp">
+      <Filter>Shader</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>

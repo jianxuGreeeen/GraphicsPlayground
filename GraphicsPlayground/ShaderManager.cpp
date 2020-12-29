@@ -8,6 +8,7 @@ void ShaderManager::Load(Graphics& arGraphics)
 	if (Map.empty())
 	{
 		Map.emplace(ShaderKey::BasicShader, nullptr);
+		Map.emplace(ShaderKey::PbrShader, nullptr);
 	}
 	
 	for (auto& kvp : Map)

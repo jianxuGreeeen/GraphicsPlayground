@@ -2,5 +2,12 @@
 
 enum class TextureKey
 {
-	ModelTex1
+	ModelTex1,
+	Roughness,
+	Albedo,
+	Normal,
+	Height,
+	Metallic,
+	Brdf,
+	Count
 };

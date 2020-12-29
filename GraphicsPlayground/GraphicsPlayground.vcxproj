@@ -159,6 +159,7 @@
     <ClInclude Include="Light.h" />
     <ClInclude Include="MathTypes.h" />
     <ClInclude Include="Model.h" />
+    <ClInclude Include="PbrShader.h" />
     <ClInclude Include="Resource.h" />
     <ClInclude Include="Release.h" />
     <ClInclude Include="ShaderBufferConstants.h" />
@@ -179,6 +180,7 @@
     <ClCompile Include="Graphics.cpp" />
     <ClCompile Include="GraphicsPlayground.cpp" />
     <ClCompile Include="Model.cpp" />
+    <ClCompile Include="PbrShader.cpp" />
     <ClCompile Include="ShaderHelper.cpp" />
     <ClCompile Include="ShaderManager.cpp" />
     <ClCompile Include="Texture.cpp" />

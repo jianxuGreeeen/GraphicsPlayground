@@ -1,5 +1,6 @@
 #include "ShaderHelper.h"
 #include "BasicShader.h"
+#include "PbrShader.h"
 
 #include <d3dcompiler.h>
 #include <stdexcept>
@@ -35,6 +36,9 @@ namespace ShaderHelper
 		{
 		case ShaderKey::BasicShader:
 			spshader = new BasicShader();
+			break;
+		case ShaderKey::PbrShader:
+			spshader = new PbrShader();
 			break;
 		default:
 			break;

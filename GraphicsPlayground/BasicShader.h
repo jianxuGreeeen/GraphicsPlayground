@@ -39,6 +39,7 @@ private:
 	 ShaderInputLayout* pLayout = nullptr;
 	 GraphicsBuffer* pVCBuffer = nullptr;
 	 GraphicsBuffer* pSCBuffer = nullptr;
+	 ID3D11SamplerState* pSamplerState = nullptr;
 
 	void InitPixelShader(Graphics& arGraphics);
 	void InitVertexShader(Graphics& arGraphics);

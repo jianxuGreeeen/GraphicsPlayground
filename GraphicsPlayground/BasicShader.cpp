@@ -79,6 +79,23 @@ void BasicShader::Init(Graphics& arGraphics)
 {
 	InitVertexShader(arGraphics);
 	InitPixelShader(arGraphics);	
+
+	auto& rdevice = arGraphics.GetDevice();
+
+	D3D11_SAMPLER_DESC sampDesc;
+	ZeroMemory(&sampDesc, sizeof(sampDesc));
+	sampDesc.Filter = D3D11_FILTER_MIN_MAG_MIP_LINEAR;
+	sampDesc.AddressU = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressV = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.AddressW = D3D11_TEXTURE_ADDRESS_WRAP;
+	sampDesc.ComparisonFunc = D3D11_COMPARISON_NEVER;
+	sampDesc.MinLOD = 0;
+	sampDesc.MaxLOD = D3D11_FLOAT32_MAX;
+	auto hr = rdevice.CreateSamplerState(&sampDesc, &pSamplerState);
+	if (FAILED(hr))
+	{
+		throw new std::runtime_error("Failed to create sampler state for BasicShader");
+	}
 }
 
 void BasicShader::Update(Graphics& arGraphics)
@@ -89,6 +106,7 @@ void BasicShader::Update(Graphics& arGraphics)
 	rctx.IASetInputLayout(pLayout);
 	rctx.VSSetConstantBuffers(0, 1, &pVCBuffer);
 	rctx.PSSetConstantBuffers(0, 1, &pSCBuffer);
+	rctx.PSSetSamplers(0, 1, &pSamplerState);
 }
 
 void BasicShader::UpdateCBuffers(Graphics& arGraphics, const ShaderBufferConstants arKey, const void* apData)
@@ -128,10 +146,7 @@ void BasicShader::UpdateTexture(Graphics& arGraphics, const TextureKey arKey, Te
 		if (apData != nullptr)
 		{
 			auto* ptextureView = apData->GetTextureView();
-			auto* psampler = apData->GetSamplerState();
-
 			rctx.PSSetShaderResources(0, 1, &ptextureView);
-			rctx.PSSetSamplers(0, 1, &psampler);
 		}
 		else
 		{
@@ -148,4 +163,5 @@ void BasicShader::Release()
 	Common::Release<PixelShader>(pPShader);
 	Common::Release<GraphicsBuffer>(pVCBuffer);
 	Common::Release<GraphicsBuffer>(pSCBuffer);
+	Common::Release<ID3D11SamplerState>(pSamplerState);
 }
