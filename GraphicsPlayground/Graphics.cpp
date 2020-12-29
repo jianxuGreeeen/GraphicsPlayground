@@ -19,10 +19,7 @@ namespace
     };
     constexpr int NumFeatureLevels = 5;
 
-    const DirectionalLight DirLight = {
-        ColorS::Red, 
-        Float3(1.0f, -1.0f, 0.0f)
-    };
+    LightBufferData LightBuffer;
 }
 
 void Graphics::Init(const App& arApp)
@@ -43,12 +40,28 @@ void Graphics::Init(const App& arApp)
     ViewPort.Width = static_cast<float>(arApp.GetSettings().Width);
     ViewPort.MinDepth = 0.0f;
     ViewPort.MaxDepth = 1.0f;
+
+    LightBuffer.DirLight = {
+        Color4(0.0f, 0.0f, 1.0f, 1.0f),
+        Float3(1.0f, -1.0f, 0.0f)
+    };
+    LightBuffer.PtLight1.Color = { 1.0f, 0.0f, 0.0f, 1.0f };
+    LightBuffer.PtLight1.Pos = { 0.0f, 0.0f, 1.0f, 1.0f };
+    LightBuffer.PtLight1.Attenuation = { 1.0f, 1.0f, 1.0f };
+
+    PointLight PtLight1;
 }
 
 void Graphics::AddItemToDraw(const GraphicsDrawState& arDrawState, const ModelInstance& arInstanceData)
 {
     ValidateDevice();
     ItemsToDraw[arDrawState].push_back(arInstanceData);
+}
+
+void Graphics::AddPointLights(const PointLight& arInstance)
+{
+    ValidateDevice();
+    PointLights = arInstance;
 }
 
 void Graphics::Update()
@@ -61,6 +74,10 @@ void Graphics::Draw()
     BeginFrame();    
 
     using namespace DirectX;
+
+    LightBuffer.PtLight1.Pos = PointLights.Pos;
+    LightBuffer.PtLight1.Color = PointLights.Color;
+    LightBuffer.PtLight1.Attenuation = PointLights.Attenuation;
 
     // TODO : allow models to select shader to use
     for (auto& kvp : ItemsToDraw)
@@ -75,7 +92,7 @@ void Graphics::Draw()
         pmodel->Update(*this);
 
         // per frame data
-        pshader->UpdateCBuffers(*this, ShaderBufferConstants::DirLight, &DirLight);
+        pshader->UpdateCBuffers(*this, ShaderBufferConstants::DirLight, &LightBuffer);
 
         auto& instances = kvp.second;
         for (auto& rinstance : instances)

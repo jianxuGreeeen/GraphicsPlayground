@@ -24,6 +24,11 @@ void GameGraphics::LoadResources(Graphics& arGfx)
 
     spbraynzar = std::make_unique<Texture>();
     spbraynzar->Init(arGfx, L"Textures/braynzar.jpg");
+
+    spLight1 = std::make_unique<PointLight>();
+    spLight1->Pos = { 0.0f, -1.0f, 3.25f, 10.0f };
+    spLight1->Color = { 1.0f, 0.0f, 0.0f, 1.0f };
+    spLight1->Attenuation = { 0.0f, 0.2f, 0.0f };
 }
 
 void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
@@ -80,4 +85,6 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
 
     drawState.RasterizerState = RasterizerStates::Default;//WireFrame;
     arGfx.AddItemToDraw(drawState, worldInstance2);
+
+    arGfx.AddPointLights(*spLight1);
 }

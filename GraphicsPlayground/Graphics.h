@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsTypes.h"
+#include "Light.h"
 #include "Model.h"
 #include "GraphicsRasterizerStates.h"
 #include <array>
@@ -46,6 +47,7 @@ public:
 	void Shutdown();
 
 	void AddItemToDraw(const GraphicsDrawState& arDrawState, const ModelInstance& arInstanceData);
+	void AddPointLights(const PointLight& arInstance);
 
 	void SetProjectionMatrix(const Matrix& arProjMatrix) { ProjectionMatrix = arProjMatrix; }
 	void SetViewMatrix(const Matrix& arViewMatrix) { ViewMatrix = arViewMatrix; }
@@ -81,6 +83,7 @@ private:
 	Matrix ViewMatrix;
 
 	std::map<GraphicsDrawState, std::vector<ModelInstance>> ItemsToDraw;
+	PointLight PointLights;
 
 	void InitAdapter();
 	void InitFactory();

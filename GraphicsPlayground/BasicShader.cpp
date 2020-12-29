@@ -1,6 +1,5 @@
 #include "BasicShader.h"
 #include "Graphics.h"
-#include "Light.h"
 #include "Release.h"
 #include "ShaderHelper.h"
 #include "ShaderNames.h"
@@ -39,7 +38,7 @@ void BasicShader::InitPixelShader(Graphics& arGraphics)
 
 	GraphicsBufferDesc desc = {};
 	desc.BindFlags = D3D11_BIND_CONSTANT_BUFFER;
-	desc.ByteWidth = sizeof(PShaderCBuffer);
+	desc.ByteWidth = sizeof(LightBufferData);
 	desc.CPUAccessFlags = 0;
 	desc.Usage = D3D11_USAGE_DEFAULT;
 
@@ -105,9 +104,12 @@ void BasicShader::UpdateCBuffers(Graphics& arGraphics, const ShaderBufferConstan
 	else if (arKey == ShaderBufferConstants::DirLight)
 	{
 		using namespace DirectX;
-		const DirectionalLight& rlight = *(static_cast<const DirectionalLight*>(apData));
-		PcBufferData.DirLightColor = rlight.Color;
-		PcBufferData.DirLightDir = rlight.Dir;
+		const LightBufferData& rlight = *(static_cast<const LightBufferData*>(apData));
+		PcBufferData.DirLight.Color = rlight.DirLight.Color;
+		PcBufferData.DirLight.Dir = rlight.DirLight.Dir;
+		PcBufferData.PtLight1.Pos = rlight.PtLight1.Pos;
+		PcBufferData.PtLight1.Color = rlight.PtLight1.Color;
+		PcBufferData.PtLight1.Attenuation = rlight.PtLight1.Attenuation;
 	}
 }
 

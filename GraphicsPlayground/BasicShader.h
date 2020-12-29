@@ -1,6 +1,7 @@
 #pragma once
 #include "IShader.h"
 #include "GraphicsTypes.h"
+#include "Light.h"
 #include <memory>
 
 class BasicShader final : public IShader
@@ -31,12 +32,7 @@ private:
 		Matrix World = MatrixS::Identity;;
 	}VcBufferData;
 
-	struct PShaderCBuffer
-	{
-		Color4 DirLightColor;
-		Float3 DirLightDir;
-		float Padding1;
-	}PcBufferData;
+	 LightBufferData PcBufferData;
 
 	 PixelShader* pPShader = nullptr;
 	 VertexShader* pVShader = nullptr;
