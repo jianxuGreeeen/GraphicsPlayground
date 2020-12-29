@@ -34,6 +34,9 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spGoldRoughness = std::make_unique<Texture>();
     spGoldRoughness->Init(arGfx, L"Textures/Gold_Roughness.png");
 
+    spGoldMetallic = std::make_unique<Texture>();
+    spGoldMetallic->Init(arGfx, L"Textures/Gold_Metallic.png");
+
     spLight1 = std::make_unique<PointLight>();
     spLight1->Pos = { 0.0f, -1.0f, 3.25f, 10.0f };
     spLight1->Color = { 1.0f, 0.0f, 0.0f, 1.0f };
@@ -44,6 +47,7 @@ void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
 {
     spLight1.release();
 
+    spGoldMetallic.release();
     spGoldRoughness.release();
     spGoldNormal.release();
     spGoldAlbedo.release();
@@ -90,14 +94,18 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     worldInstance1.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
     worldInstance2.WorldMatrix = worldMatrix2;
     worldInstance2.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Albedo, spGoldAlbedo.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Roughness, spGoldRoughness.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Metallic, spGoldMetallic.get()));
 
     GraphicsDrawState drawState;
-    drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
-    drawState.RasterizerState = RasterizerStates::Default;
     drawState.pModel = spCube.get();
-	arGfx.AddItemToDraw(drawState, worldInstance1);
+    drawState.RasterizerState = RasterizerStates::Default;
+    /*drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
+    drawState.RasterizerState = RasterizerStates::Default;
+	arGfx.AddItemToDraw(drawState, worldInstance1);*/
 
-    drawState.RasterizerState = RasterizerStates::Default;//WireFrame;
+    drawState.pShader = ShaderMgr.GetShader(ShaderKey::PbrShader);
     arGfx.AddItemToDraw(drawState, worldInstance2);
 
     arGfx.AddPointLight(*spLight1);

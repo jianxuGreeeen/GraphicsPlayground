@@ -37,6 +37,7 @@ private:
 	std::unique_ptr<Texture> spGoldAlbedo;
 	std::unique_ptr<Texture> spGoldNormal;
 	std::unique_ptr<Texture> spGoldRoughness;
+	std::unique_ptr<Texture> spGoldMetallic;
 
 	void LoadResources(Graphics& arGfx);
 

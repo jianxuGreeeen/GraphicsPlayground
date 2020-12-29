@@ -5,9 +5,10 @@ enum class TextureKey
 	ModelTex1,
 	Roughness,
 	Albedo,
-	Normal,
-	Height,
 	Metallic,
 	Brdf,
+
+	Normal,
+	Height,
 	Count
 };
