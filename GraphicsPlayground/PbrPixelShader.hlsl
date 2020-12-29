@@ -26,16 +26,24 @@ struct PS_INPUT
 	float3 Normal : NORMAL;
 };
 
-cbuffer LightBuffer : register(b0)
+cbuffer Data : register(b0)
 {
 	DirectionalLight DirLight;
 	PointLight PtLight1;
+
+	float3 Albedo;
+	float Roughness;
+	float Metallic;
+	float CamPos;
 };
 
 float4 main(PS_INPUT input) : SV_TARGET
 {
 	float4 textureColor = ObjTexture.Sample(ObjSamplerState, input.Uv);
 
+	// diffuse
+
+	// specular
 	float3 lightDir = DirLight.Dir;
 	lightDir.xy = -lightDir.xy;
 	float lightIntensity = saturate(dot(input.Normal, lightDir));

@@ -1,6 +1,7 @@
 #pragma once
 
 #include "GraphicsTypes.h"
+#include "Camera.h"
 #include "Light.h"
 #include "Model.h"
 #include "GraphicsRasterizerStates.h"
@@ -50,6 +51,7 @@ public:
 	void AddItemToDraw(const GraphicsDrawState& arDrawState, const ModelInstance& arInstanceData);
 	void AddPointLight(const PointLight& arInstance);
 
+	void SetCamera(const Camera& arCamera);
 	void SetProjectionMatrix(const Matrix& arProjMatrix) { ProjectionMatrix = arProjMatrix; }
 	void SetViewMatrix(const Matrix& arViewMatrix) { ViewMatrix = arViewMatrix; }
 	
@@ -85,6 +87,8 @@ private:
 
 	std::map<GraphicsDrawState, std::vector<ModelInstance>> ItemsToDraw;
 	PointLight PointLight1;
+	Camera Cam;
+	float AspectRatio = 0.0f;
 
 	void InitAdapter();
 	void InitFactory();

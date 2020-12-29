@@ -13,6 +13,7 @@ struct DirectionalLight
 
 	Color4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Float3 Dir = { 0.0f, 0.0f, 1.0f};
+	float pad = 0.0f;
 };
 
 struct PointLight
@@ -27,4 +28,5 @@ struct PointLight
 	Color4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
 	Float4 Pos = { 0.0f, 0.0f, 1.0f, 1.0f }; // Range is the w component
 	Float3 Attenuation = { 1.0f, 1.0f, 1.0f };
+	float pad = 0.0f;
 };

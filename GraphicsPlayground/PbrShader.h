@@ -37,10 +37,16 @@ private:
 			Color4(.2f, .2f, .2f, 1.0f),
 			Float3(1.0f, -1.0f, 0.0f)
 		};
-		float pad1 = 0.0f;
-
 		PointLight PtLight1;
+
+		Color4 Albedo = { 1.0f, 0.0f, 0.0f, 1.0f };
+
+		float Roughness = 0.0f;
+		float Metallic = 0.0f;
+		float pad1 = 0.0f;
 		float pad2 = 0.0f;
+
+		Vector CamPos = { 0.0f, 0.0f, 0.0f, 0.0f };
 	} PcBufferData;
 
 	PixelShader* pPShader = nullptr;

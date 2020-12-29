@@ -94,9 +94,6 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     worldInstance1.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
     worldInstance2.WorldMatrix = worldMatrix2;
     worldInstance2.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
-    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Albedo, spGoldAlbedo.get()));
-    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Roughness, spGoldRoughness.get()));
-    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Metallic, spGoldMetallic.get()));
 
     GraphicsDrawState drawState;
     drawState.pModel = spCube.get();

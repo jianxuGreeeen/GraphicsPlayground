@@ -44,6 +44,11 @@ void Graphics::Init(const App& arApp)
     ViewPort.MinDepth = 0.0f;
     ViewPort.MaxDepth = 1.0f;
 
+    auto& rwindowSettings = arApp.GetSettings();
+    const auto width = static_cast<float>(rwindowSettings.Width);
+    const auto height = static_cast<float>(rwindowSettings.Height);
+    AspectRatio = width / height;
+
     DirLight = {
         Color4(0.0f, 0.0f, 1.0f, 1.0f),
         Float3(1.0f, -1.0f, 0.0f)
@@ -60,6 +65,16 @@ void Graphics::AddPointLight(const PointLight& arInstance)
 {
     ValidateDevice();
     PointLight1 = arInstance;
+}
+
+void Graphics::SetCamera(const Camera& arCamera)
+{
+    Cam = arCamera;
+
+    using namespace DirectX;
+    const Vector camUp = XMVectorSet(0, 1, 0, 0);
+    ViewMatrix = XMMatrixLookAtLH(Cam.EyePos, Cam.FocusPos, camUp);
+    ProjectionMatrix = XMMatrixPerspectiveFovLH(XMConvertToRadians(Cam.Fov), AspectRatio, Cam.Near, Cam.Far);
 }
 
 void Graphics::Update()
@@ -88,6 +103,7 @@ void Graphics::Draw()
         // per frame data
         pshader->UpdateCBuffers(*this, ShaderBufferConstants::DirLight, &DirLight);
         pshader->UpdateCBuffers(*this, ShaderBufferConstants::PointLight, &PointLight1);
+        pshader->UpdateCBuffers(*this, ShaderBufferConstants::CamPos, &Cam.EyePos);
 
         auto& instances = kvp.second;
         for (auto& rinstance : instances)

@@ -66,18 +66,38 @@ void PbrShader::UpdateCBuffers(Graphics& arGraphics, const ShaderBufferConstants
 	}
 	else if (arKey == ShaderBufferConstants::DirLight)
 	{
-		using namespace DirectX;
 		const DirectionalLight& rlight = *(static_cast<const DirectionalLight*>(apData));
 		PcBufferData.DirLight.Color = rlight.Color;
 		PcBufferData.DirLight.Dir = rlight.Dir;
 	}
 	else if (arKey == ShaderBufferConstants::PointLight)
 	{
-		using namespace DirectX;
 		const PointLight& rlight = *(static_cast<const PointLight*>(apData));
 		PcBufferData.PtLight1.Pos = rlight.Pos;
 		PcBufferData.PtLight1.Color = rlight.Color;
 		PcBufferData.PtLight1.Attenuation = rlight.Attenuation;
+	}
+	else if (arKey == ShaderBufferConstants::Albedo)
+	{
+		const Float3& ralbedo = *(static_cast<const Float3*>(apData));
+		PcBufferData.Albedo.x = ralbedo.x;
+		PcBufferData.Albedo.y = ralbedo.y;
+		PcBufferData.Albedo.z = ralbedo.z;
+	}
+	else if (arKey == ShaderBufferConstants::Roughness)
+	{
+		const float& rroughness = *(static_cast<const float*>(apData));
+		PcBufferData.Roughness = rroughness;
+	}
+	else if (arKey == ShaderBufferConstants::Albedo)
+	{
+		const float& rmetallic = *(static_cast<const float*>(apData));
+		PcBufferData.Metallic = rmetallic;
+	}
+	else if (arKey == ShaderBufferConstants::CamPos)
+	{
+		const Vector& rcamPos = *(static_cast<const Vector*>(apData));
+		PcBufferData.CamPos = rcamPos;
 	}
 }
 
@@ -92,17 +112,16 @@ void PbrShader::UpdateTexture(Graphics& arGraphics, const TextureKey arKey, Text
 {
 	if (arKey == TextureKey::ModelTex1)
 	{
-		int index = static_cast<int>(arKey) + 1;
 		auto& rctx = arGraphics.GetDeviceCtx();
 		if (apData != nullptr)
 		{
 			auto* ptextureView = apData->GetTextureView();
-			rctx.PSSetShaderResources(0, index, &ptextureView);
+			rctx.PSSetShaderResources(0, 1, &ptextureView);
 		}
 		else
 		{
 			ShaderResourceView* nullSRV[1] = { nullptr };
-			rctx.PSSetShaderResources(0, index, nullSRV);
+			rctx.PSSetShaderResources(0, 1, nullSRV);
 		}
 	}
 }
