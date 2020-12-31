@@ -28,7 +28,7 @@ public:
 	static std::unique_ptr<Model> NewTriangle();
 	static std::unique_ptr<Model> NewQuad();
 	static std::unique_ptr<Model> NewCube();
-
+	static std::unique_ptr<Model> NewSphere();
 private:
 
 	int NumVerts() const { return static_cast<int>(Verts.size()); }

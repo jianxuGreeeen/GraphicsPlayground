@@ -31,6 +31,7 @@ private:
 	std::unique_ptr<Model> spTriangle;
 	std::unique_ptr<Model> spQuad;
 	std::unique_ptr<Model> spCube;
+	std::unique_ptr<Model> spSphere;
 	std::unique_ptr<PointLight> spLight1;
 
 	std::unique_ptr<Texture> spbraynzar;

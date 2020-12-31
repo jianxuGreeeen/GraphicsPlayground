@@ -1,5 +1,6 @@
 #include "Model.h"
 #include "Graphics.h"
+#include "MathTypes.h"
 #include "Release.h"
 #include <math.h>
 
@@ -97,6 +98,86 @@ std::unique_ptr<Model> Model::NewCube()
 		20, 22, 23
 	};
 
+	return std::make_unique<Model>(std::move(verts), std::move(indices));
+}
+
+
+// https://github.com/JJJohan/PBR/blob/master/PBR/Shapes.cpp
+std::unique_ptr<Model> Model::NewSphere()
+{
+	using namespace DirectX;
+
+	constexpr int sliceCount = 20;
+	constexpr int stackCount = 20;
+	constexpr float radius = 0.5f;
+
+	std::vector<Vertex> verts(sliceCount * stackCount + 1);
+	std::vector<Index> indices(sliceCount * 6 + (stackCount - 2) * sliceCount * 6);
+
+	verts[0].Pos = { 0.0f, radius, 0.0f };
+	verts[0].Normal = { 0.0f, 1.0f, 0.0f };
+	verts[0].UV = { 0.0f, 0.0f };
+
+	const float phiStep = XM_PI / stackCount;
+	const float thetaStep = XM_2PI / sliceCount;
+
+	int vertexIndex = 1;
+	for (int i = 1; i <= stackCount - 1; i++)
+	{
+		const float phi = i * phiStep;
+		for (int j = 0; j <= sliceCount; j++)
+		{
+			const float theta = j * thetaStep;
+			verts[vertexIndex].Pos = Float3(
+				radius * XMScalarSin(phi) * XMScalarCos(theta),
+				radius * XMScalarCos(phi),
+				radius * XMScalarSin(phi) * XMScalarSin(theta));
+
+			XMStoreFloat3(&verts[vertexIndex].Normal,
+				XMVector3Normalize(XMLoadFloat3(&verts[vertexIndex].Pos)));
+
+			verts[vertexIndex].UV = Float2(theta / XM_2PI, phi / XM_PI);
+
+			++vertexIndex;
+		}
+	}
+
+	verts[vertexIndex].Pos = { 0.0f, -radius, 0.0f };
+	verts[vertexIndex].Normal = { 0.0f, -1.0f, 0.0f };
+	verts[vertexIndex].UV = { 0.0f, 1.0f };
+
+	++vertexIndex;
+
+	int index = 0;
+	for (int i = 1; i <= sliceCount; i++)
+	{
+		indices[index++] = 0;
+		indices[index++] = i + 1;
+		indices[index++] = i;
+	}
+	int baseIndex = 1;
+	const int ringVertexCount = sliceCount + 1;
+	for (int i = 0; i < stackCount - 2; i++)
+	{
+		for (int j = 0; j < sliceCount; j++)
+		{
+			indices[index++] = baseIndex + i * ringVertexCount + j;
+			indices[index++] = baseIndex + i * ringVertexCount + j + 1;
+			indices[index++] = baseIndex + (i + 1) * ringVertexCount + j;
+
+			indices[index++] = baseIndex + (i + 1) * ringVertexCount + j;
+			indices[index++] = baseIndex + i * ringVertexCount + j + 1;
+			indices[index++] = baseIndex + (i + 1) * ringVertexCount + j + 1;
+		}
+	}
+	const int southPoleIndex = vertexIndex - 1;
+	baseIndex = southPoleIndex - ringVertexCount;
+	for (int i = 0; i < sliceCount; i++)
+	{
+		indices[index++] = southPoleIndex;
+		indices[index++] = baseIndex + i;
+		indices[index++] = baseIndex + i + 1;
+	}
 	return std::make_unique<Model>(std::move(verts), std::move(indices));
 }
 

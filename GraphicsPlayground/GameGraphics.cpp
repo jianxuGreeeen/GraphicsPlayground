@@ -22,6 +22,9 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spCube = Model::NewCube();
     spCube->Init(arGfx);
 
+    spSphere = Model::NewSphere();
+    spSphere->Init(arGfx);
+
     spbraynzar = std::make_unique<Texture>();
     spbraynzar->Init(arGfx, L"Textures/braynzar.jpg");
 
@@ -41,7 +44,7 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spBrdf->Init(arGfx, L"Textures/ibl_brdf_lut.png");
 
     spLight1 = std::make_unique<PointLight>();
-    spLight1->Pos = { 0.0f, 0.5f, 3.250f, 10.0f };
+    spLight1->Pos = { 0.0f, 0.5f, 2.250f, 10.0f };
     spLight1->Color = { 1.0f, 1.f, 1.0f, 1.0f };
     spLight1->Attenuation = { 1.0f, 0.2f, 1.0f };
 }
@@ -59,6 +62,7 @@ void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
     spTriangle.release();
     spQuad.release();
     spCube.release();
+    spSphere.release();
 
     ShaderMgr.Shutdown(arGfx);
 }
@@ -109,6 +113,7 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
 	arGfx.AddItemToDraw(drawState, worldInstance1);
 
+    drawState.pModel = spSphere.get();
     drawState.pShader = ShaderMgr.GetShader(ShaderKey::PbrShader);
     arGfx.AddItemToDraw(drawState, worldInstance2);
 
