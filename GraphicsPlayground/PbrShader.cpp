@@ -77,23 +77,6 @@ void PbrShader::UpdateCBuffers(Graphics& arGraphics, const ShaderBufferConstants
 		PcBufferData.PtLight1.Color = rlight.Color;
 		PcBufferData.PtLight1.Attenuation = rlight.Attenuation;
 	}
-	else if (arKey == ShaderBufferConstants::Albedo)
-	{
-		const Float3& ralbedo = *(static_cast<const Float3*>(apData));
-		PcBufferData.Albedo.x = ralbedo.x;
-		PcBufferData.Albedo.y = ralbedo.y;
-		PcBufferData.Albedo.z = ralbedo.z;
-	}
-	else if (arKey == ShaderBufferConstants::Roughness)
-	{
-		const float& rroughness = *(static_cast<const float*>(apData));
-		PcBufferData.Roughness = rroughness;
-	}
-	else if (arKey == ShaderBufferConstants::Albedo)
-	{
-		const float& rmetallic = *(static_cast<const float*>(apData));
-		PcBufferData.Metallic = rmetallic;
-	}
 	else if (arKey == ShaderBufferConstants::CamPos)
 	{
 		const Vector& rcamPos = *(static_cast<const Vector*>(apData));
@@ -110,18 +93,40 @@ void PbrShader::CommitCBufferData(Graphics& arGraphics)
 
 void PbrShader::UpdateTexture(Graphics& arGraphics, const TextureKey arKey, Texture* const apData)
 {
-	if (arKey == TextureKey::ModelTex1)
+	int index = -1;
+	switch (arKey)
+	{
+	case TextureKey::Brdf:
+		index = 0;
+		break;
+	case TextureKey::Albedo:
+		index = 1;
+		break;
+	case TextureKey::Roughness:
+		index = 2;
+		break;
+	case TextureKey::Metallic:
+		index = 3;
+		break;
+	case TextureKey::Normal:
+		index = 4;
+		break;
+	case TextureKey::ModelTex1:
+	default:
+		break;
+	}
+	if (index != -1)
 	{
 		auto& rctx = arGraphics.GetDeviceCtx();
 		if (apData != nullptr)
 		{
 			auto* ptextureView = apData->GetTextureView();
-			rctx.PSSetShaderResources(0, 1, &ptextureView);
+			rctx.PSSetShaderResources(index, 1, &ptextureView);
 		}
 		else
 		{
 			ShaderResourceView* nullSRV[1] = { nullptr };
-			rctx.PSSetShaderResources(0, 1, nullSRV);
+			rctx.PSSetShaderResources(index, 1, nullSRV);
 		}
 	}
 }
@@ -140,7 +145,7 @@ void PbrShader::InitPixelShader(Graphics& arGraphics)
 {
 	auto& rdevice = arGraphics.GetDevice();
 
-	auto* pcso = ShaderHelper::CreateCompiledShaderObject(ShaderNames::BasicPixelShader);
+	auto* pcso = ShaderHelper::CreateCompiledShaderObject(ShaderNames::PbrPixelShader);
 	auto hr = rdevice.CreatePixelShader(pcso->GetBufferPointer(), pcso->GetBufferSize(), nullptr, &pPShader);
 	pcso->Release();
 	if (FAILED(hr))
@@ -161,7 +166,7 @@ void PbrShader::InitVertexShader(Graphics& arGraphics)
 {
 	auto& rdevice = arGraphics.GetDevice();
 
-	auto* pcso = ShaderHelper::CreateCompiledShaderObject(ShaderNames::BasicVertShader);
+	auto* pcso = ShaderHelper::CreateCompiledShaderObject(ShaderNames::PbrVertShader);
 	auto hr = rdevice.CreateVertexShader(pcso->GetBufferPointer(), pcso->GetBufferSize(), nullptr, &pVShader);
 	if (FAILED(hr))
 	{

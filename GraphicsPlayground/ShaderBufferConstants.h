@@ -6,9 +6,6 @@ enum class ShaderBufferConstants
 	World,
 	DirLight,
 	PointLight,
-	Albedo,
-	Roughness,
-	Metallic,
 	CamPos
 };
 

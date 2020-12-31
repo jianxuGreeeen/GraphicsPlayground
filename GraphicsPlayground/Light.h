@@ -11,8 +11,8 @@ struct DirectionalLight
 
 	DirectionalLight() = default;
 
-	Color4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
-	Float3 Dir = { 0.0f, 0.0f, 1.0f};
+	Color4 Color = ColorS::Black;
+	Float3 Dir = Float3S::Forward;
 	float pad = 0.0f;
 };
 
@@ -25,7 +25,7 @@ struct PointLight
 
 	PointLight() = default;
 
-	Color4 Color = { 1.0f, 1.0f, 1.0f, 1.0f };
+	Color4 Color = ColorS::Black;
 	Float4 Pos = { 0.0f, 0.0f, 1.0f, 1.0f }; // Range is the w component
 	Float3 Attenuation = { 1.0f, 1.0f, 1.0f };
 	float pad = 0.0f;

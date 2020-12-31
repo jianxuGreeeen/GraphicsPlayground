@@ -37,16 +37,20 @@ void GameGraphics::LoadResources(Graphics& arGfx)
     spGoldMetallic = std::make_unique<Texture>();
     spGoldMetallic->Init(arGfx, L"Textures/Gold_Metallic.png");
 
+    spBrdf = std::make_unique<Texture>();
+    spBrdf->Init(arGfx, L"Textures/ibl_brdf_lut.png");
+
     spLight1 = std::make_unique<PointLight>();
-    spLight1->Pos = { 0.0f, -1.0f, 3.25f, 10.0f };
-    spLight1->Color = { 1.0f, 0.0f, 0.0f, 1.0f };
-    spLight1->Attenuation = { 0.0f, 0.2f, 0.0f };
+    spLight1->Pos = { 0.0f, 0.5f, 3.250f, 10.0f };
+    spLight1->Color = { 1.0f, 1.f, 1.0f, 1.0f };
+    spLight1->Attenuation = { 1.0f, 0.2f, 1.0f };
 }
 
 void GameGraphics::Shutdown(App& arApp, Graphics& arGfx)
 {
     spLight1.release();
 
+    spBrdf.release();
     spGoldMetallic.release();
     spGoldRoughness.release();
     spGoldNormal.release();
@@ -93,14 +97,17 @@ void GameGraphics::Update(App& arApp, Graphics& arGfx)
     worldInstance1.WorldMatrix = worldMatrix1;
     worldInstance1.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
     worldInstance2.WorldMatrix = worldMatrix2;
-    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::ModelTex1, spbraynzar.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Brdf, spBrdf.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Albedo, spGoldAlbedo.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Roughness, spGoldRoughness.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Metallic, spGoldMetallic.get()));
+    worldInstance2.pTextures.emplace(std::make_pair(TextureKey::Normal, spGoldNormal.get()));
 
     GraphicsDrawState drawState;
     drawState.pModel = spCube.get();
     drawState.RasterizerState = RasterizerStates::Default;
-    /*drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
-    drawState.RasterizerState = RasterizerStates::Default;
-	arGfx.AddItemToDraw(drawState, worldInstance1);*/
+    drawState.pShader = ShaderMgr.GetShader(ShaderKey::BasicShader);
+	arGfx.AddItemToDraw(drawState, worldInstance1);
 
     drawState.pShader = ShaderMgr.GetShader(ShaderKey::PbrShader);
     arGfx.AddItemToDraw(drawState, worldInstance2);

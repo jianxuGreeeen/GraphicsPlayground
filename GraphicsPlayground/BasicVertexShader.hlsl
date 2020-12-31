@@ -29,7 +29,7 @@ VS_OUTPUT main(VS_INPUT input)
     output.WorldPos = mul(float4(input.Pos, 1.0f), World);
     output.Uv = input.Uv;
     output.Color = input.Color;
-    output.Normal = mul(float4(input.Normal, 1.0f), World).xyz;
+    output.Normal = mul(float4(input.Normal, 1.0f), (float3x3)World).xyz;
     output.Normal = normalize(output.Normal);
 
     return output;
